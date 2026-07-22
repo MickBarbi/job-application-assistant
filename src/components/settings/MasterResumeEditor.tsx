@@ -6,6 +6,7 @@
  */
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/components/feedback/ToastProvider";
 import type { MasterResumeData } from "@/lib/validation";
 
 function readApiError(value: unknown): string | null {
@@ -28,6 +29,7 @@ export function MasterResumeEditor({
   initialData: MasterResumeData;
 }) {
   const router = useRouter();
+  const { notify } = useToast();
   const [label, setLabel] = useState(initialLabel);
   const [json, setJson] = useState(() => JSON.stringify(initialData, null, 2));
   const [isSaving, setIsSaving] = useState(false);
@@ -46,6 +48,7 @@ export function MasterResumeEditor({
     } catch {
       setIsSaving(false);
       setError("Master resume must be valid JSON.");
+      notify("Master resume must be valid JSON.", "error");
       return;
     }
 
@@ -57,13 +60,17 @@ export function MasterResumeEditor({
       });
       const body: unknown = await response.json();
       if (!response.ok) {
-        setError(readApiError(body) ?? "Unable to save the master resume.");
+        const message = readApiError(body) ?? "Unable to save the master resume.";
+        setError(message);
+        notify(message, "error");
         return;
       }
       setMessage("Master resume saved.");
+      notify("Master resume saved.");
       router.refresh();
     } catch {
       setError("Unable to reach the server. Please try again.");
+      notify("Unable to reach the server. Please try again.", "error");
     } finally {
       setIsSaving(false);
     }

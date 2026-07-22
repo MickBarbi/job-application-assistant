@@ -6,6 +6,7 @@
  */
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/components/feedback/ToastProvider";
 
 export interface TemplateSummary {
   id: string;
@@ -43,6 +44,7 @@ function readApiError(value: unknown): string | null {
 
 export function TemplateManager({ templates }: { templates: TemplateSummary[] }) {
   const router = useRouter();
+  const { notify } = useToast();
   const [drafts, setDrafts] = useState<Record<string, TemplateDraft>>(() =>
     Object.fromEntries(
       templates.map((template) => [
@@ -84,13 +86,17 @@ export function TemplateManager({ templates }: { templates: TemplateSummary[] })
       });
       const body: unknown = await response.json();
       if (!response.ok) {
-        setError(readApiError(body) ?? "Unable to save this template.");
+        const message = readApiError(body) ?? "Unable to save this template.";
+        setError(message);
+        notify(message, "error");
         return;
       }
       setMessage("Template saved.");
+      notify("Template saved.");
       router.refresh();
     } catch {
       setError("Unable to reach the server. Please try again.");
+      notify("Unable to reach the server. Please try again.", "error");
     } finally {
       setBusyId(null);
     }
@@ -104,13 +110,17 @@ export function TemplateManager({ templates }: { templates: TemplateSummary[] })
       const response = await fetch(`/api/templates/${id}`, { method: "DELETE" });
       if (!response.ok) {
         const body: unknown = await response.json();
-        setError(readApiError(body) ?? "Unable to delete this template.");
+        const message = readApiError(body) ?? "Unable to delete this template.";
+        setError(message);
+        notify(message, "error");
         return;
       }
       setMessage("Template deleted.");
+      notify("Template deleted.");
       router.refresh();
     } catch {
       setError("Unable to reach the server. Please try again.");
+      notify("Unable to reach the server. Please try again.", "error");
     } finally {
       setBusyId(null);
     }
@@ -129,14 +139,18 @@ export function TemplateManager({ templates }: { templates: TemplateSummary[] })
       });
       const body: unknown = await response.json();
       if (!response.ok) {
-        setError(readApiError(body) ?? "Unable to create this template.");
+        const message = readApiError(body) ?? "Unable to create this template.";
+        setError(message);
+        notify(message, "error");
         return;
       }
       setNewTemplate(EMPTY_TEMPLATE);
       setMessage("Template created.");
+      notify("Template created.");
       router.refresh();
     } catch {
       setError("Unable to reach the server. Please try again.");
+      notify("Unable to reach the server. Please try again.", "error");
     } finally {
       setBusyId(null);
     }

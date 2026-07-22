@@ -6,6 +6,7 @@
  */
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/components/feedback/ToastProvider";
 import { APPLICATION_STATUSES, STATUS_LABELS, type ApplicationStatus } from "@/lib/types";
 
 function readApiError(value: unknown): string | null {
@@ -30,6 +31,7 @@ export function ApplicationControls({
   initialNotes: string;
 }) {
   const router = useRouter();
+  const { notify } = useToast();
   const [status, setStatus] = useState<ApplicationStatus>(initialStatus);
   const [notes, setNotes] = useState(initialNotes);
   const [isSavingStatus, setIsSavingStatus] = useState(false);
@@ -57,10 +59,13 @@ export function ApplicationControls({
     try {
       await patchApplication({ status: nextStatus });
       setMessage("Status updated.");
+      notify("Status updated.");
       router.refresh();
     } catch (err) {
       setStatus(initialStatus);
-      setError(err instanceof Error ? err.message : "Unable to update status.");
+      const message = err instanceof Error ? err.message : "Unable to update status.";
+      setError(message);
+      notify(message, "error");
     } finally {
       setIsSavingStatus(false);
     }
@@ -74,9 +79,12 @@ export function ApplicationControls({
     try {
       await patchApplication({ notes });
       setMessage("Notes saved.");
+      notify("Notes saved.");
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to save notes.");
+      const message = err instanceof Error ? err.message : "Unable to save notes.";
+      setError(message);
+      notify(message, "error");
     } finally {
       setIsSavingNotes(false);
     }

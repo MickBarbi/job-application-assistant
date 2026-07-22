@@ -6,6 +6,7 @@
  */
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/components/feedback/ToastProvider";
 
 interface CreatedJobResponse {
   id: string;
@@ -59,6 +60,7 @@ function readApiError(value: unknown): string | null {
 
 export function JobForm() {
   const router = useRouter();
+  const { notify } = useToast();
   const [values, setValues] = useState<FormState>(INITIAL_STATE);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -81,18 +83,23 @@ export function JobForm() {
       const body: unknown = await response.json();
 
       if (!response.ok) {
-        setError(readApiError(body) ?? "Unable to save this job posting.");
+        const message = readApiError(body) ?? "Unable to save this job posting.";
+        setError(message);
+        notify(message, "error");
         return;
       }
       if (!isCreatedJobResponse(body)) {
         setError("The server returned an unexpected response.");
+        notify("The server returned an unexpected response.", "error");
         return;
       }
 
+      notify("Job saved.");
       router.push(`/jobs/${body.id}`);
       router.refresh();
     } catch {
       setError("Unable to reach the server. Please try again.");
+      notify("Unable to reach the server. Please try again.", "error");
     } finally {
       setIsSubmitting(false);
     }

@@ -37,8 +37,8 @@ employers, titles, dates, or credentials.**
 
 ### Current goals
 
-1. Harden the completed Milestone 3 UI with integration tests and fuller user
-   feedback patterns.
+1. Improve the completed app with structured Settings editing, richer resume
+   generation tests, and deployment packaging.
 2. Keep the architecture testable, typed, and honest about degradation (missing
    OpenAI key or LaTeX engine should degrade gracefully, never crash).
 
@@ -244,10 +244,12 @@ updates where safe; the current forms use inline success/error messages.
 - **No PDF engine in this environment:** PDF compilation will throw
   `PdfCompilationError` (caught and surfaced as a non-fatal warning) until a
   LaTeX engine is installed. See *How To Run*.
-- **No auth:** the app assumes a single trusted local user. Do not deploy
-  publicly without adding auth (see roadmap Milestone 4).
-- **API integration tests** are not yet written — only pure-logic unit tests
-  exist. Routes were verified manually.
+- **Auth is optional:** leave `APP_AUTH_TOKEN` empty for trusted local use; set
+  it before exposing the app beyond a private machine/network.
+- **API integration tests cover the core routes.** Jobs, applications, master
+  resume, templates, resume-generation misconfiguration, resume downloads, and
+  auth middleware are covered against throwaway SQLite / direct middleware
+  tests. Successful AI/PDF generation still needs fake-boundary coverage.
 
 ---
 
@@ -255,12 +257,13 @@ updates where safe; the current forms use inline success/error messages.
 
 Prioritized for the next developer/agent:
 
-1. **Milestone 4 hardening** (see `docs/roadmap.md`): API integration tests
-   against a throwaway SQLite DB, search/pagination on the jobs list, and
-   optional single-user auth for non-local deployment.
-2. **Wire up fuller user feedback**: shared toast patterns, optimistic updates
-   where safe, and consistent loading/error states. The current client controls
-   use inline messages plus `router.refresh()`.
+1. **Structured Settings editor:** replace raw master-resume JSON editing with
+   typed form sections while still saving through `PUT /api/master-resume`.
+2. **Successful generation-path tests:** add injected/fake OpenAI and PDF
+   boundaries so `POST /api/resumes/generate` can be tested without network or
+   LaTeX.
+3. **Deployment packaging:** add a Dockerfile/deployment guide with a bundled
+   LaTeX engine for reliable PDF export.
 
 Full milestone list lives in [`docs/roadmap.md`](./roadmap.md).
 
@@ -297,10 +300,9 @@ Full milestone list lives in [`docs/roadmap.md`](./roadmap.md).
 
 | Item | Impact | Recommended fix |
 | ---- | ------ | --------------- |
-| No API integration tests | Route regressions could slip through | Add Vitest tests hitting handlers against a temp SQLite DB |
-| No auth | Cannot deploy publicly | Add single-user token/session (Milestone 4) |
+| Successful generation path not integration-tested | AI/PDF orchestration regressions could slip through | Add fake OpenAI/PDF boundaries for route-level tests |
 | `force-dynamic` on all pages | Fine for personal use; would not scale | Introduce caching/revalidation only if multi-user |
-| Minimal client-side state/UX | No optimistic updates or toasts | Add after core pages exist |
+| Settings raw JSON editor | Editing master resume is powerful but not friendly | Replace with typed form sections |
 | `openai`/`next`/`zod` etc. have newer majors available | None today (pinned & working) | Upgrade deliberately, one major at a time, re-running tests/build |
 | PDF engine not bundled | PDF disabled unless engine installed | Document install; consider a Docker image with tectonic for deploy |
 

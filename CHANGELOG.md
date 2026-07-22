@@ -6,7 +6,20 @@ incrementally milestone by milestone.
 
 ## [Unreleased]
 
-### Milestone 3 — Dashboard & UI (in progress)
+### Milestone 4 — Hardening
+
+Added:
+
+- API route integration tests against a throwaway SQLite database covering job
+  creation/update/delete, application status transitions, master-resume
+  validation, LaTeX template default/delete invariants, resume generation
+  misconfiguration, and resume download fallbacks.
+- Optional single-user authentication via `APP_AUTH_TOKEN`, accepting bearer
+  tokens and browser-friendly HTTP Basic auth.
+- Jobs list search, status filtering, and pagination.
+- Shared toast notifications for client-side mutation feedback.
+
+### Milestone 3 — Dashboard & UI
 
 Added:
 
@@ -25,9 +38,8 @@ Added:
 
 Changed:
 
-- Documented the current Milestone 3 UI progress in README, roadmap, and handoff
-  notes so the next session can focus on Settings.
-
+- Documented the completed Milestone 3 UI in README, roadmap, and handoff
+  notes.
 Remaining polish for this milestone: fuller feedback patterns such as shared
 toasts/optimistic updates. Tracked in the roadmap.
 

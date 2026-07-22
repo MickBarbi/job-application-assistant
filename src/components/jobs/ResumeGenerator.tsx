@@ -6,6 +6,7 @@
  */
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/components/feedback/ToastProvider";
 
 interface GenerateResumeResponse {
   id: string;
@@ -35,6 +36,7 @@ function readApiError(value: unknown): string | null {
 
 export function ResumeGenerator({ applicationId }: { applicationId: string }) {
   const router = useRouter();
+  const { notify } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [warning, setWarning] = useState<string | null>(null);
@@ -55,19 +57,27 @@ export function ResumeGenerator({ applicationId }: { applicationId: string }) {
       const body: unknown = await response.json();
 
       if (!response.ok) {
-        setError(readApiError(body) ?? "Unable to generate a resume.");
+        const message = readApiError(body) ?? "Unable to generate a resume.";
+        setError(message);
+        notify(message, "error");
         return;
       }
       if (!isGenerateResumeResponse(body)) {
         setError("The server returned an unexpected response.");
+        notify("The server returned an unexpected response.", "error");
         return;
       }
 
       setMessage("Tailored resume generated.");
-      if (body.pdfWarning) setWarning(body.pdfWarning);
+      notify("Tailored resume generated.");
+      if (body.pdfWarning) {
+        setWarning(body.pdfWarning);
+        notify(body.pdfWarning, "warning");
+      }
       router.refresh();
     } catch {
       setError("Unable to reach the server. Please try again.");
+      notify("Unable to reach the server. Please try again.", "error");
     } finally {
       setIsGenerating(false);
     }

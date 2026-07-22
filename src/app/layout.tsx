@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { ToastProvider } from "@/components/feedback/ToastProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -42,7 +43,9 @@ export default function RootLayout({
               </nav>
             </div>
           </header>
-          <main className="mx-auto max-w-6xl px-6 py-8">{children}</main>
+          <ToastProvider>
+            <main className="mx-auto max-w-6xl px-6 py-8">{children}</main>
+          </ToastProvider>
         </div>
       </body>
     </html>

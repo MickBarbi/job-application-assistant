@@ -14,9 +14,9 @@ An AI-powered system for managing a job search end to end:
 Built with **Next.js (App Router) + TypeScript**, **Prisma + SQLite**, **Zod**,
 and **Vitest**.
 
-> **Status:** built incrementally. The Milestone 3 browser UI now covers the
-> dashboard, jobs workflow, application controls, resume generation, and
-> Settings for master resume/template management. See
+> **Status:** built incrementally. The core browser UI is complete, Milestone 4
+> hardening is in place with route integration tests, optional single-user auth,
+> jobs filtering/pagination, and shared toast feedback. See
 > [`CHANGELOG.md`](./CHANGELOG.md) for what exists today and
 > [`docs/roadmap.md`](./docs/roadmap.md) for what's planned.
 
@@ -82,6 +82,7 @@ All configuration is via environment variables (see [`.env.example`](./.env.exam
 | `OPENAI_BASE_URL` | —                | Optional override (proxy/Azure gateway)    |
 | `LATEX_ENGINE`    | `tectonic`       | `tectonic` \| `pdflatex` \| `xelatex`      |
 | `STORAGE_DIR`     | `./storage`      | Where generated `.tex`/`.pdf` are written  |
+| `APP_AUTH_TOKEN`  | —                | Optional token enabling single-user auth   |
 
 ---
 
@@ -102,5 +103,6 @@ Unit tests cover the pure, correctness-critical logic: LaTeX escaping and
 template rendering, Zod validation, and the resume-generation pipeline (with a
 fake completer, so no API key or network is needed). The UI currently exposes
 the dashboard, jobs list, job creation, job detail/status management, resume
-generation, resume PDF/`.tex` downloads, and Settings for editing the active
-master resume plus managing LaTeX templates.
+generation, resume PDF/`.tex` downloads, Settings for editing the active
+master resume plus managing LaTeX templates, jobs search/filter/pagination, and
+optional single-user auth.

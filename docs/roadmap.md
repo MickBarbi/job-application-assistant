@@ -34,12 +34,21 @@ tests) before the next begins.
 - Settings page (`/settings`) for editing the active master resume and managing
   LaTeX templates.
 
-## 🔜 Milestone 4 — Hardening (planned)
+## ✅ Milestone 4 — Hardening
 
-- Automated integration tests for API routes against a test database.
-- Optimistic UI updates and toast notifications.
+- Automated integration tests for API routes against a test database, covering
+  jobs, applications, master resume, templates, resume-generation
+  misconfiguration, resume downloads, and optional auth middleware.
+- Shared toast notifications and optimistic status-select feedback.
 - Pagination and search/filtering on the jobs list.
-- Auth (single-user API token) for non-local deployments.
+- Optional single-user auth via `APP_AUTH_TOKEN` for non-local deployments.
+
+## 🔜 Next focus candidates
+
+- Polish the Settings editor with structured form sections instead of raw JSON.
+- Add resume-generation integration tests with injected fake OpenAI/PDF
+  boundaries for successful generation paths.
+- Add deployment docs/Dockerfile with a bundled LaTeX engine.
 
 ## 💡 Backlog / ideas
 
