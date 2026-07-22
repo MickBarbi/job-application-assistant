@@ -6,6 +6,19 @@ incrementally milestone by milestone.
 
 ## [Unreleased]
 
+### Milestone 3 — Dashboard & UI (in progress)
+
+Added:
+
+- App shell: root layout with navigation and global Tailwind styles.
+- `StatusBadge` component and shared UI utility classes.
+- Dashboard page: summary tiles, pipeline breakdown, recent jobs, and recent
+  activity (server component reading via Prisma).
+- Jobs list page.
+
+Remaining for this milestone: add-job form, job/application detail page, and the
+settings page (master resume + templates). Tracked in the roadmap.
+
 ### Milestone 2 — API layer
 
 Added:
