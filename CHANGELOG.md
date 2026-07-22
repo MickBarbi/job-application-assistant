@@ -40,7 +40,6 @@ Changed:
 
 - Documented the completed Milestone 3 UI in README, roadmap, and handoff
   notes.
-
 Remaining polish for this milestone: fuller feedback patterns such as shared
 toasts/optimistic updates. Tracked in the roadmap.
 
