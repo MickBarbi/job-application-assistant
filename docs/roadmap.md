@@ -20,21 +20,19 @@ tests) before the next begins.
 - Service layer for status transitions (auto timeline events, `appliedAt`) and
   resume generation orchestration. Verified end-to-end against the dev server.
 
-## 🚧 Milestone 3 — Dashboard & UI (in progress)
-
-Done so far:
+## ✅ Milestone 3 — Dashboard & UI
 
 - App shell: layout with navigation, Tailwind styles, shared UI primitives, and
   a `StatusBadge` component.
 - Dashboard with summary tiles, pipeline breakdown, recent jobs, and recent
   activity.
 - Jobs list page.
-
-Still to do (next session):
-
-- Add-job form (`/jobs/new`) and job/application detail page (`/jobs/[id]`) with
-  inline status control, timeline, and generated-resume history/downloads.
-- Settings page: edit the master resume and manage LaTeX templates.
+- Add-job form (`/jobs/new`) that creates postings through the JSON API.
+- Job/application detail page (`/jobs/[id]`) with inline status control, notes,
+  timeline activity, tailored-resume generation, and generated-resume
+  history/downloads.
+- Settings page (`/settings`) for editing the active master resume and managing
+  LaTeX templates.
 
 ## 🔜 Milestone 4 — Hardening (planned)
 

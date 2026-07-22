@@ -15,9 +15,21 @@ Added:
 - Dashboard page: summary tiles, pipeline breakdown, recent jobs, and recent
   activity (server component reading via Prisma).
 - Jobs list page.
+- Add-job form (`/jobs/new`) that saves postings through `POST /api/jobs` and
+  redirects to the created job detail page.
+- Job/application detail page (`/jobs/[id]`) with posting details, inline status
+  updates, notes editing, timeline activity, tailored-resume generation, and
+  PDF/`.tex` download links for generated resumes.
+- Settings page (`/settings`) for editing the active master resume JSON and
+  managing LaTeX templates, including default selection and template deletion.
 
-Remaining for this milestone: add-job form, job/application detail page, and the
-settings page (master resume + templates). Tracked in the roadmap.
+Changed:
+
+- Documented the current Milestone 3 UI progress in README, roadmap, and handoff
+  notes so the next session can focus on Settings.
+
+Remaining polish for this milestone: fuller feedback patterns such as shared
+toasts/optimistic updates. Tracked in the roadmap.
 
 ### Milestone 2 — API layer
 
