@@ -106,7 +106,8 @@ describe("generateTailoredResume", () => {
       },
       completer
     );
-    const call = (completer.complete as ReturnType<typeof vi.fn>).mock.calls[0][0];
+    const call = (completer.complete as ReturnType<typeof vi.fn>).mock
+      .calls[0]![0];
     expect(call.system).toBe(SYSTEM_PROMPT);
     expect(call.json).toBe(true);
   });

@@ -6,6 +6,27 @@ incrementally milestone by milestone.
 
 ## [Unreleased]
 
+### Milestone 2 — API layer
+
+Added:
+
+- JSON API helpers with uniform error handling, a `HttpError` type, and
+  Zod-validated request-body parsing (`src/lib/api.ts`).
+- Application service recording timeline events on every status change and
+  auto-setting `appliedAt` (`src/lib/services/applications.ts`).
+- Resume-generation service orchestrating AI tailoring, LaTeX rendering,
+  optional PDF compilation, and persistence (`src/lib/services/resume-service.ts`).
+- REST routes:
+  - `GET/POST /api/jobs`, `GET/PATCH/DELETE /api/jobs/[id]`
+  - `GET/PATCH /api/applications/[id]`
+  - `GET/PUT /api/master-resume`
+  - `GET/POST /api/templates`, `PATCH/DELETE /api/templates/[id]`
+  - `POST /api/resumes/generate`
+  - `GET /api/resumes/[id]/pdf`, `GET /api/resumes/[id]/tex`
+  - `GET /api/stats`
+- Verified end-to-end against the dev server (create/list, status transitions
+  with timeline, validation errors, and graceful 503 when OpenAI is unconfigured).
+
 ### Milestone 1 — Foundation & core domain
 
 Added:

@@ -12,11 +12,13 @@ tests) before the next begins.
   & templating engine, PDF compilation service, resume-tailoring generator.
 - Unit tests for escaping, templating, validation, and the generation pipeline.
 
-## 🔜 Milestone 2 — API layer
+## ✅ Milestone 2 — API layer
 
 - REST routes for jobs (CRUD), applications (status + notes + timeline),
   master resumes, templates, and resume generation / PDF & `.tex` download.
 - Consistent JSON error handling and Zod-validated request bodies.
+- Service layer for status transitions (auto timeline events, `appliedAt`) and
+  resume generation orchestration. Verified end-to-end against the dev server.
 
 ## 🔜 Milestone 3 — Dashboard & UI
 
