@@ -38,8 +38,8 @@ employers, titles, dates, or credentials.**
 
 ### Current goals
 
-1. Improve the completed app with deployment packaging and production
-   operations guidance.
+1. Validate and refine the new Docker/Compose deployment path on the target
+   host, including persistent SQLite/storage backups and smoke tests.
 2. Keep the architecture testable, typed, and honest about degradation (missing
    OpenAI key or LaTeX engine should degrade gracefully, never crash).
 
@@ -142,9 +142,13 @@ job-application-assistant/
 ├─ AGENTS.md                  # Primary instructions for AI agents (read first)
 ├─ README.md                  # Quick start & scripts
 ├─ CHANGELOG.md               # Per-milestone history
+├─ Dockerfile                 # Production image with Node.js 22 + Tectonic
+├─ compose.yaml               # Single-service deployment with persistent /data
+├─ docker-entrypoint.sh        # Creates storage and applies Prisma schema
 ├─ docs/
 │  ├─ HANDOFF.md              # This file
 │  ├─ architecture.md         # Deeper architecture notes + pipeline diagram
+│  ├─ deployment.md           # Docker/env/PDF/smoke-test operator guide
 │  └─ roadmap.md              # Milestones and what's next
 ├─ prisma/
 │  ├─ schema.prisma           # Data model (SQLite)
@@ -179,6 +183,8 @@ job-application-assistant/
 │     ├─ openai.ts            # ChatCompleter interface + OpenAI impl
 │     ├─ types.ts             # Status constants & domain enums
 │     ├─ validation.ts        # Zod schemas (source of truth)
+│     ├─ jobs/
+│     │  └─ intake.ts         # Local paste-to-prefill job posting parser
 │     ├─ resume/
 │     │  ├─ defaults.ts       # Default LaTeX template + sample master resume
 │     │  ├─ editor-state.ts   # Pure helpers for structured Settings editor
@@ -265,12 +271,13 @@ auth, and route integration tests are all in place.
 
 Prioritized for the next developer/agent:
 
-1. **Deployment packaging:** add a Dockerfile/deployment guide with a bundled
-   LaTeX engine for reliable PDF export.
+1. **Create a PR/merge checkpoint:** the local branch now includes deployment
+   assets plus paste-to-prefill job intake; merge before stacking more large
+   product work if you want a clean GitHub review point.
 2. **Settings UX refinements:** consider reorder controls and richer validation
    affordances on top of the structured editor.
-3. **Product expansion:** consider job-posting import, cover-letter generation,
-   and analytics once deployment is documented.
+3. **Product expansion:** consider URL-based import/AI extraction, cover-letter
+   generation, and analytics after the current local paste parser is merged.
 
 Full milestone list lives in [`docs/roadmap.md`](./roadmap.md).
 
@@ -298,6 +305,9 @@ Full milestone list lives in [`docs/roadmap.md`](./roadmap.md).
   (e.g. `\` → `\textbackslash{}`) are swapped for private-use sentinels first so
   a later brace-escaping pass cannot corrupt them, then restored last. This was
   a real bug caught by a unit test; do not "simplify" it away.
+- **Job intake is local first:** `/jobs/new` can parse pasted posting text into
+  structured fields without network or AI, keeping the save path as the existing
+  validated `POST /api/jobs` route.
 - **SQLite by default** for zero-config local use; the datasource is swappable
   to Postgres/MySQL for production.
 
@@ -309,7 +319,7 @@ Full milestone list lives in [`docs/roadmap.md`](./roadmap.md).
 | ---- | ------ | --------------- |
 | `force-dynamic` on all pages | Fine for personal use; would not scale | Introduce caching/revalidation only if multi-user |
 | `openai`/`next`/`zod` etc. have newer majors available | None today (pinned & working) | Upgrade deliberately, one major at a time, re-running tests/build |
-| PDF engine not bundled | PDF disabled unless engine installed | Document install; consider a Docker image with tectonic for deploy |
+| Docker image size includes Tectonic and full Node dependencies | Larger image than a standalone Next.js build | Validate on target host; optimize only if needed |
 
 ---
 
@@ -439,4 +449,5 @@ All checks run on 2026-07-22, Node v22.22.2:
 | OpenAI key                    | ⚠️ placeholder in `.env` (replace to use AI) |
 
 No failing checks. The two ⚠️ items are environment configuration, not code
-defects.
+defects. The Docker deployment assets are documented but still need validation on
+the target host.

@@ -7,6 +7,7 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/feedback/ToastProvider";
+import { mergeJobPostingDraft, parseJobPostingDraft } from "@/lib/jobs/intake";
 
 interface CreatedJobResponse {
   id: string;
@@ -63,10 +64,27 @@ export function JobForm() {
   const { notify } = useToast();
   const [values, setValues] = useState<FormState>(INITIAL_STATE);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [pasteText, setPasteText] = useState("");
+  const [parseMessage, setParseMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   function updateField(name: FieldName, value: string) {
     setValues((current) => ({ ...current, [name]: value }));
+  }
+
+  function prefillFromPaste() {
+    const draft = parseJobPostingDraft(pasteText);
+    const populated = FIELD_NAMES.filter((field) => field !== "notes" && Boolean(draft[field]));
+
+    if (populated.length === 0) {
+      setParseMessage("Paste a posting with a title, company, URL, salary, or description to prefill the form.");
+      notify("No job details found in the pasted text.", "error");
+      return;
+    }
+
+    setValues((current) => mergeJobPostingDraft(current, draft));
+    setParseMessage(`Prefilled ${populated.length} field${populated.length === 1 ? "" : "s"}: ${populated.join(", ")}.`);
+    notify("Job details prefilled.");
   }
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
@@ -107,6 +125,35 @@ export function JobForm() {
 
   return (
     <form onSubmit={onSubmit} className="card space-y-5 p-6">
+      <section className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h2 className="font-semibold text-slate-900">Paste a job posting</h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Paste the copied posting text first, then prefill the structured fields before saving.
+            </p>
+          </div>
+          <button
+            type="button"
+            className="btn-secondary shrink-0"
+            onClick={prefillFromPaste}
+            disabled={pasteText.trim().length === 0}
+          >
+            Prefill form
+          </button>
+        </div>
+        <textarea
+          className="input mt-3"
+          value={pasteText}
+          onChange={(event) => {
+            setPasteText(event.target.value);
+            setParseMessage(null);
+          }}
+          rows={6}
+          placeholder="Paste the full job posting here — title, company, URL, salary, and description will be detected when possible."
+        />
+        {parseMessage && <p className="mt-2 text-sm text-slate-500">{parseMessage}</p>}
+      </section>
       {error && (
         <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
           {error}

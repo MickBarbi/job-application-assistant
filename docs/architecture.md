@@ -99,6 +99,16 @@ working directory, then copies the resulting PDF into `STORAGE_DIR/resumes/`.
 Engine availability is probed once and memoised; if unavailable, a
 `PdfCompilationError` is thrown and callers fall back to offering the `.tex`.
 
+## Deployment architecture
+
+The default production packaging is a single Docker container orchestrated by
+`compose.yaml`. The image builds the Next.js app with Node.js 22, installs
+Tectonic in the runtime layer, and serves with `next start`. Runtime state lives
+under the persistent `/data` volume: `DATABASE_URL=file:/data/app.db` for SQLite
+and `STORAGE_DIR=/data/storage` for generated LaTeX/PDF artifacts. The entrypoint
+runs `prisma db push --skip-generate` before startup so a fresh volume receives
+the current schema. See `docs/deployment.md` for operator steps and smoke tests.
+
 ## Testing strategy
 
 - **Pure logic is unit-tested** (Vitest): escaping, templating, validation, and
