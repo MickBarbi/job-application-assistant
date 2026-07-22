@@ -43,11 +43,20 @@ tests) before the next begins.
 - Pagination and search/filtering on the jobs list.
 - Optional single-user auth via `APP_AUTH_TOKEN` for non-local deployments.
 
+## ✅ Settings polish
+
+- Structured master-resume editor for contact info, summary, skills, experience,
+  education, and projects.
+- JSON payload preview remains available for advanced inspection/debugging.
+
+## ✅ Resume-generation test hardening
+
+- Successful generation route tests use fake OpenAI/PDF boundaries to verify
+  generated-resume persistence, timeline-event creation, PDF path persistence,
+  and non-fatal PDF warnings without network or LaTeX.
+
 ## 🔜 Next focus candidates
 
-- Polish the Settings editor with structured form sections instead of raw JSON.
-- Add resume-generation integration tests with injected fake OpenAI/PDF
-  boundaries for successful generation paths.
 - Add deployment docs/Dockerfile with a bundled LaTeX engine.
 
 ## 💡 Backlog / ideas

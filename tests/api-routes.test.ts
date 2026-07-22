@@ -11,6 +11,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { PrismaClient } from "@prisma/client";
+import { PdfCompilationError } from "@/lib/resume/pdf";
+import type { ResumeGenerationDependencies } from "@/lib/services/resume-service";
 
 type JobsRoute = {
   GET: () => Promise<Response>;
@@ -37,6 +39,12 @@ type GenerateResumeRoute = {
   POST: (request: Request) => Promise<Response>;
 };
 
+type GenerateResumeRouteHandlerFactory = {
+  createGenerateResumePostHandler: (
+    dependencies?: ResumeGenerationDependencies
+  ) => (request: Request) => Promise<Response>;
+};
+
 type RouteContext = { params: Promise<{ id: string }> };
 
 let tempDir = "";
@@ -48,6 +56,7 @@ let masterResumeRoute: MasterResumeRoute;
 let templatesRoute: TemplatesRoute;
 let templateRoute: IdRoute;
 let generateResumeRoute: GenerateResumeRoute;
+let generateResumeRouteHandlerFactory: GenerateResumeRouteHandlerFactory;
 let resumeTexRoute: IdRoute;
 let resumePdfRoute: IdRoute;
 
@@ -70,6 +79,7 @@ beforeAll(async () => {
   templatesRoute = await import("@/app/api/templates/route");
   templateRoute = await import("@/app/api/templates/[id]/route");
   generateResumeRoute = await import("@/app/api/resumes/generate/route");
+  generateResumeRouteHandlerFactory = await import("@/lib/services/resume-route-handler");
   resumeTexRoute = await import("@/app/api/resumes/[id]/tex/route");
   resumePdfRoute = await import("@/app/api/resumes/[id]/pdf/route");
 });
@@ -302,6 +312,65 @@ describe("resume routes", () => {
     expect(asRecord(await response.json()).error).toContain("OPENAI_API_KEY");
   });
 
+
+  it("persists a generated resume, timeline event, and PDF path on success", async () => {
+    const { application, masterResume, template } = await createGenerationInputs();
+    const post = generateResumeRouteHandlerFactory.createGenerateResumePostHandler(fakeGenerationDependencies({
+      compile: async (_latexSource, id) => ({
+        pdfPath: `/tmp/${id}.pdf`,
+        relativePath: `resumes/${id}.pdf`,
+      }),
+    }));
+
+    const response = await post(jsonRequest("/api/resumes/generate", {
+      applicationId: application.id,
+      masterResumeId: masterResume.id,
+      templateId: template.id,
+      compilePdf: true,
+    }));
+
+    expect(response.status).toBe(201);
+    const body = asRecord(await response.json());
+    const resumeId = expectString(body.id);
+    const stored = await prisma.generatedResume.findUnique({ where: { id: resumeId } });
+    const event = await prisma.applicationEvent.findFirst({
+      where: { applicationId: application.id, type: "resume_generated" },
+    });
+
+    expect(body.model).toBe("fake-route-model");
+    expect(body.pdfPath).toBe(`resumes/${resumeId}.pdf`);
+    expect(stored?.pdfPath).toBe(`resumes/${resumeId}.pdf`);
+    expect(stored?.latexSource).toContain("Tailored integration summary");
+    expect(stored?.rationale).toBe("Matched the posting with existing facts.");
+    expect(event?.message).toContain("fake-route-model");
+  });
+
+  it("persists the generated resume before surfacing a PDF warning", async () => {
+    const { application, masterResume, template } = await createGenerationInputs();
+    const post = generateResumeRouteHandlerFactory.createGenerateResumePostHandler(fakeGenerationDependencies({
+      compile: async () => {
+        throw new PdfCompilationError("Fake PDF engine unavailable.");
+      },
+    }));
+
+    const response = await post(jsonRequest("/api/resumes/generate", {
+      applicationId: application.id,
+      masterResumeId: masterResume.id,
+      templateId: template.id,
+      compilePdf: true,
+    }));
+
+    expect(response.status).toBe(201);
+    const body = asRecord(await response.json());
+    const resumeId = expectString(body.id);
+    const stored = await prisma.generatedResume.findUnique({ where: { id: resumeId } });
+
+    expect(body.pdfPath).toBeNull();
+    expect(body.pdfWarning).toBe("Fake PDF engine unavailable.");
+    expect(stored?.pdfPath).toBeNull();
+    expect(stored?.latexSource).toContain("Tailored integration summary");
+  });
+
   it("downloads generated LaTeX and reports missing PDFs clearly", async () => {
     const resume = await createGeneratedResume({ pdfPath: null });
     const getTex = requireHandler(resumeTexRoute.GET);
@@ -375,6 +444,44 @@ async function createApplication() {
 
   if (!job.application) throw new Error("Expected created application.");
   return job.application;
+}
+
+async function createGenerationInputs() {
+  const application = await createApplication();
+  const masterResume = await prisma.masterResume.create({
+    data: {
+      label: "Generation source",
+      data: JSON.stringify(minimalResume()),
+      isActive: false,
+    },
+  });
+  const template = await prisma.latexTemplate.create({
+    data: {
+      name: "Generation template",
+      body: "{{contact.name}}\n{{summary}}",
+      isDefault: false,
+    },
+  });
+
+  return { application, masterResume, template };
+}
+
+function fakeGenerationDependencies({
+  compile,
+}: {
+  compile: ResumeGenerationDependencies["compileLatexToPdf"];
+}): ResumeGenerationDependencies {
+  return {
+    getCompleter: () => ({
+      model: "fake-route-model",
+      complete: async () => JSON.stringify({
+        ...minimalResume(),
+        summary: "Tailored integration summary",
+        rationale: "Matched the posting with existing facts.",
+      }),
+    }),
+    compileLatexToPdf: compile,
+  };
 }
 
 async function createGeneratedResume({ pdfPath }: { pdfPath: string | null }) {

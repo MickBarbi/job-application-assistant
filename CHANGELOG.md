@@ -6,6 +6,26 @@ incrementally milestone by milestone.
 
 ## [Unreleased]
 
+### Resume-generation test hardening
+
+Added:
+
+- Added dependency injection seams for the resume generation service and route
+  handler so successful generation can be tested with fake OpenAI/PDF
+  boundaries.
+- Added integration tests for successful resume generation, PDF path persistence,
+  timeline-event creation, and non-fatal PDF warning behavior.
+
+### Settings polish
+
+Added:
+
+- Replaced the raw master-resume JSON editor with structured Settings sections
+  for contact info, summary, skills, experience, education, and projects while
+  preserving the validated `PUT /api/master-resume` save path.
+- Added tested pure helpers for repeatable resume-editor state operations and
+  multiline list normalization.
+
 ### Milestone 4 — Hardening
 
 Added:
@@ -40,6 +60,7 @@ Changed:
 
 - Documented the completed Milestone 3 UI in README, roadmap, and handoff
   notes.
+
 Remaining polish for this milestone: fuller feedback patterns such as shared
 toasts/optimistic updates. Tracked in the roadmap.
 
