@@ -86,8 +86,24 @@ All configuration is via environment variables (see [`.env.example`](./.env.exam
 
 ---
 
+## Deployment
+
+For production, use the included Docker setup with a persistent `/data` volume:
+
+```bash
+docker compose --env-file .env.production.local up --build -d
+```
+
+The container runs Next.js, applies the Prisma SQLite schema on startup, stores
+SQLite plus generated resume artifacts under `/data`, and installs Tectonic for
+PDF compilation. See [`docs/deployment.md`](./docs/deployment.md) for required
+production environment variables, auth setup, LaTeX behavior, backup guidance,
+and the smoke-test checklist.
+
 ## Documentation
 
+- [`docs/deployment.md`](./docs/deployment.md) — Docker/Compose production setup,
+  environment variables, LaTeX/PDF notes, backups, and smoke tests.
 - [`docs/architecture.md`](./docs/architecture.md) — system design, data model,
   and the resume-generation pipeline.
 - [`docs/roadmap.md`](./docs/roadmap.md) — milestones and what's next.
@@ -102,7 +118,7 @@ npm run test
 Unit tests cover the pure, correctness-critical logic: LaTeX escaping and
 template rendering, Zod validation, and the resume-generation pipeline (with a
 fake completer, so no API key or network is needed). The UI currently exposes
-the dashboard, jobs list, job creation, job detail/status management, resume
+the dashboard, jobs list, paste-to-prefill job creation, job detail/status management, copy-ready application kits, resume
 generation, resume PDF/`.tex` downloads, Settings for editing the active
 master resume plus managing LaTeX templates, jobs search/filter/pagination, and
 optional single-user auth.

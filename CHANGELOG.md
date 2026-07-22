@@ -6,6 +6,33 @@ incrementally milestone by milestone.
 
 ## [Unreleased]
 
+### Application throughput
+
+Added:
+
+- Added an application kit to job detail pages with a per-job submission
+  checklist and copy-ready recruiter, follow-up, and tracking snippets.
+- Added deterministic tests for application-kit checklist and snippet builders.
+
+### Job intake speed
+
+Added:
+
+- Added a paste-to-prefill workflow on the add-job form that extracts common
+  fields from copied job postings without requiring network or AI calls.
+- Added deterministic parser tests for labeled postings, common copied posting
+  layouts, and safe merging into the add-job form state.
+
+### Deployment/operator readiness
+
+Added:
+
+- Added Docker and Docker Compose deployment assets for a Node.js 22 production
+  app with Prisma SQLite data and generated resumes persisted under `/data`.
+- Added production deployment documentation covering required environment
+  variables, optional single-user auth, Tectonic-first PDF compilation, backups,
+  and a smoke-test checklist.
+
 ### Documentation
 
 Changed:
