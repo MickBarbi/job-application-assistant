@@ -5,8 +5,9 @@
 > the repository, what is done, what is not, and how to continue safely. Read it
 > end to end before making changes.
 >
-> **Last updated:** 2026-07-22 · **Branch:** `claude/ai-job-app-manager-vdiv5w`
-> · **Latest commit at handoff:** pending current Codex commit (Milestone 3 complete).
+> **Last updated:** 2026-07-22 · **Branches:** `main` and `work` are aligned
+> locally at `fd3bd92` (latest merged baseline known to this environment).
+> Continue new work from `main` → recreate `work` to avoid PR conflicts.
 
 ---
 
@@ -153,7 +154,10 @@ job-application-assistant/
 │  │  ├─ layout.tsx           # Root layout + nav
 │  │  ├─ globals.css          # Tailwind + component utility classes
 │  │  ├─ page.tsx             # Dashboard (server component)
-│  │  ├─ jobs/page.tsx        # Jobs list (server component)
+│  │  ├─ jobs/page.tsx        # Jobs list with search/filter/pagination
+│  │  ├─ jobs/new/page.tsx    # Add-job page
+│  │  ├─ jobs/[id]/page.tsx   # Job/application detail page
+│  │  ├─ settings/page.tsx    # Master resume + template settings
 │  │  └─ api/                 # Route handlers (REST)
 │  │     ├─ jobs/…            # GET/POST, [id] GET/PATCH/DELETE
 │  │     ├─ applications/[id] # GET/PATCH (status, notes, timeline)
@@ -164,7 +168,10 @@ job-application-assistant/
 │  │     ├─ resumes/[id]/tex  # GET (download .tex)
 │  │     └─ stats             # GET (dashboard stats)
 │  ├─ components/
-│  │  └─ StatusBadge.tsx
+│  │  ├─ StatusBadge.tsx
+│  │  ├─ feedback/ToastProvider.tsx
+│  │  ├─ jobs/                # Job form, controls, resume generation action
+│  │  └─ settings/            # Master resume + template editors
 │  └─ lib/
 │     ├─ api.ts               # JSON response + error handling helpers
 │     ├─ db.ts                # Prisma client singleton
@@ -174,16 +181,21 @@ job-application-assistant/
 │     ├─ validation.ts        # Zod schemas (source of truth)
 │     ├─ resume/
 │     │  ├─ defaults.ts       # Default LaTeX template + sample master resume
+│     │  ├─ editor-state.ts   # Pure helpers for structured Settings editor
 │     │  ├─ generator.ts      # Tailoring pipeline (pure prompt builders + orchestration)
 │     │  ├─ latex.ts          # LaTeX escaping + Mustache-style template engine
 │     │  └─ pdf.ts            # PDF compilation (spawns LaTeX engine)
 │     └─ services/
 │        ├─ applications.ts   # Status transitions + timeline events
+│        ├─ resume-route-handler.ts # Injectable resume-generation route factory
 │        └─ resume-service.ts # Generation orchestration + persistence
-├─ tests/                     # Vitest unit tests
+├─ tests/                     # Vitest unit + integration tests
+│  ├─ api-routes.test.ts      # Route handlers against throwaway SQLite
+│  ├─ editor-state.test.ts
+│  ├─ generator.test.ts
 │  ├─ latex.test.ts
-│  ├─ validation.test.ts
-│  └─ generator.test.ts
+│  ├─ middleware.test.ts
+│  └─ validation.test.ts
 ├─ .env.example               # Documented env template
 ├─ next.config.ts             # serverExternalPackages for prisma
 ├─ tailwind.config.ts
@@ -223,21 +235,17 @@ job-application-assistant/
 - Add-job page (`/jobs/new`) with a client form posting to `POST /api/jobs`.
 - Job detail page (`/jobs/[id]`) showing posting details, application controls,
   notes, timeline, resume generation, and generated-resume downloads.
-- Settings page (`/settings`) for editing the active master resume JSON and
-  managing LaTeX templates.
+- Settings page (`/settings`) with a structured master-resume editor and
+  LaTeX template management.
 
 ---
 
 ## Work In Progress
 
-Milestone 3 (UI) is functionally complete. The core jobs workflow exists:
-`/jobs/new` creates postings through the API and `/jobs/[id]` exposes job
-details, status updates, notes, timeline events, resume generation, and
-generated-resume downloads. `/settings` edits the active master resume and
-manages LaTeX templates through the existing JSON APIs.
-
-Remaining UI polish is shared feedback patterns such as toasts and optimistic
-updates where safe; the current forms use inline success/error messages.
+The core app is functionally complete through Settings and Milestone 4
+hardening. Jobs, application lifecycle controls, resume generation/downloads,
+structured master-resume editing, template management, shared toasts, optional
+auth, and route integration tests are all in place.
 
 ### Known limitations
 
@@ -330,6 +338,7 @@ npm run db:seed           # sample master resume, default template, example jobs
 | `OPENAI_BASE_URL` | no       | —               | Proxy/Azure gateway override |
 | `LATEX_ENGINE`    | no       | `tectonic`      | `tectonic` \| `pdflatex` \| `xelatex` |
 | `STORAGE_DIR`     | no       | `./storage`     | Where generated `.tex`/`.pdf` are written |
+| `APP_AUTH_TOKEN`  | no       | —               | Optional single-user auth token |
 
 > The committed `.env` in this environment has a **placeholder** `OPENAI_API_KEY`
 > (`"sk-..."`) — replace it with a real key to exercise AI generation. `.env` is
@@ -352,12 +361,31 @@ npm run start        # serve the production build
 ### Testing / quality
 
 ```bash
-npm run test         # Vitest (32 tests)
+npm run test         # Vitest (51 tests at latest local run)
 npm run typecheck    # tsc --noEmit
 npm run lint         # next lint
 ```
 
 ---
+
+## Git / branch handoff note
+
+The GitHub default branch is now `main`. In this environment, local `main` and
+`work` were aligned at `fd3bd92` to avoid repeatedly opening PRs from stale
+history. For the next chat/session, start by syncing from GitHub if credentials
+are available:
+
+```bash
+git fetch origin main
+git checkout main
+git reset --hard origin/main
+git checkout -B work main
+```
+
+If GitHub credentials are unavailable in the container, ask the human to merge or
+sync externally, then ensure `git diff main..work` is empty before starting new
+work. This prevents conflicts caused by stacking new changes on an already
+merged PR branch.
 
 ## AI Agent Instructions
 
@@ -404,9 +432,9 @@ All checks run on 2026-07-22, Node v22.22.2:
 | `npm install` / dependency tree | ✅ resolves (one harmless extraneous transitive `@emnapi/runtime`) |
 | `npm run typecheck`           | ✅ pass (0 errors) |
 | `npm run lint`                | ✅ pass (0 warnings/errors) |
-| `npm run test`                | ✅ 32/32 pass |
-| `npm run build`               | ✅ success — 13 routes compiled |
-| Git working tree              | ✅ clean, pushed to origin |
+| `npm run test`                | ✅ 51/51 pass |
+| `npm run build`               | ✅ success — app routes + middleware compiled |
+| Git working tree              | ✅ clean locally; remote push/fetch requires credentials/network outside this environment |
 | LaTeX engine present          | ⚠️ none installed here (PDF degrades gracefully by design) |
 | OpenAI key                    | ⚠️ placeholder in `.env` (replace to use AI) |
 

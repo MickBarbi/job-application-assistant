@@ -6,6 +6,14 @@ incrementally milestone by milestone.
 
 ## [Unreleased]
 
+### Documentation
+
+Changed:
+
+- Refreshed `docs/HANDOFF.md` for the next Codex session with the `main` branch
+  rename, local branch-sync guidance, current test count, optional auth env var,
+  and updated repository structure.
+
 ### Resume-generation test hardening
 
 Added:
