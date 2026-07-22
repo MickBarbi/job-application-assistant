@@ -22,9 +22,15 @@ export const env = {
   openaiBaseUrl: process.env.OPENAI_BASE_URL || undefined,
   latexEngine: parseEngine(process.env.LATEX_ENGINE),
   storageDir: process.env.STORAGE_DIR ?? "./storage",
+  appAuthToken: process.env.APP_AUTH_TOKEN ?? "",
 };
 
 /** Whether AI features are configured. */
 export function hasOpenAI(): boolean {
   return env.openaiApiKey.length > 0;
+}
+
+/** Returns the optional single-user auth token. Read dynamically for middleware/tests. */
+export function getAppAuthToken(): string {
+  return process.env.APP_AUTH_TOKEN ?? env.appAuthToken;
 }

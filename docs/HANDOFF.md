@@ -6,7 +6,7 @@
 > end to end before making changes.
 >
 > **Last updated:** 2026-07-22 · **Branch:** `claude/ai-job-app-manager-vdiv5w`
-> · **Latest commit at handoff:** `8593bf3` (Milestone 3, partial).
+> · **Latest commit at handoff:** pending current Codex commit (Milestone 3 complete).
 
 ---
 
@@ -37,7 +37,8 @@ employers, titles, dates, or credentials.**
 
 ### Current goals
 
-1. Finish the UI (Milestone 3) so every API capability is usable in the browser.
+1. Improve the completed app with structured Settings editing, richer resume
+   generation tests, and deployment packaging.
 2. Keep the architecture testable, typed, and honest about degradation (missing
    OpenAI key or LaTeX engine should degrade gracefully, never crash).
 
@@ -67,11 +68,11 @@ employers, titles, dates, or credentials.**
   simple reads.
 - Pages that need fresh data set `export const dynamic = "force-dynamic"` (this
   is a low-traffic personal app; caching is deliberately avoided).
-- **Mutations** are intended to flow through **client components** that call the
-  JSON API with `fetch`. (The dashboard and lists are built; the interactive
-  forms are the main WIP — see *Work In Progress*.)
-- Shared presentational pieces live in `src/components` (currently
-  `StatusBadge`).
+- **Mutations** flow through **client components** that call the JSON API with
+  `fetch`. The add-job form, detail status controls, notes editor, and resume
+  generation action follow this pattern.
+- Shared presentational pieces live in `src/components`, with feature-specific
+  client components under `src/components/jobs` and `src/components/settings`.
 
 ### Backend architecture
 
@@ -213,45 +214,42 @@ job-application-assistant/
 - Verified end-to-end against the dev server (create/list, status transitions
   with timeline, validation errors, graceful 503 when OpenAI unconfigured).
 
-**Milestone 3 — Dashboard & UI (PARTIAL, commit `8593bf3`)**
+**Milestone 3 — Dashboard & UI**
 - Root layout with navigation + global Tailwind styles + utility classes.
 - `StatusBadge` component.
 - Dashboard page: summary tiles, pipeline breakdown, recent jobs, recent
   activity (server component via Prisma).
 - Jobs list page.
+- Add-job page (`/jobs/new`) with a client form posting to `POST /api/jobs`.
+- Job detail page (`/jobs/[id]`) showing posting details, application controls,
+  notes, timeline, resume generation, and generated-resume downloads.
+- Settings page (`/settings`) for editing the active master resume JSON and
+  managing LaTeX templates.
 
 ---
 
 ## Work In Progress
 
-Milestone 3 (UI) is **partially complete**. The following are **not yet built**:
+Milestone 3 (UI) is functionally complete. The core jobs workflow exists:
+`/jobs/new` creates postings through the API and `/jobs/[id]` exposes job
+details, status updates, notes, timeline events, resume generation, and
+generated-resume downloads. `/settings` edits the active master resume and
+manages LaTeX templates through the existing JSON APIs.
 
-1. **Add-job form** — route `/jobs/new` is linked from the dashboard and jobs
-   list but **does not exist yet** (currently 404s). Needs a client component
-   posting to `POST /api/jobs`.
-2. **Job / application detail page** — route `/jobs/[id]` is linked from lists
-   but **does not exist yet** (currently 404s). Should show posting details,
-   an inline **status control** (`PATCH /api/applications/[id]`), the
-   **timeline** of events, a **"Generate tailored resume"** action
-   (`POST /api/resumes/generate`), and a **history of generated resumes** with
-   PDF/.tex download links.
-3. **Settings page** — route `/settings` is linked from the nav but **does not
-   exist yet** (currently 404s). Should edit the **master resume**
-   (`GET/PUT /api/master-resume`) and manage **LaTeX templates**
-   (`GET/POST /api/templates`, `PATCH/DELETE /api/templates/[id]`).
+Remaining UI polish is shared feedback patterns such as toasts and optimistic
+updates where safe; the current forms use inline success/error messages.
 
 ### Known limitations
 
-- **Dead links today:** `/jobs/new`, `/jobs/[id]`, and `/settings` resolve to
-  Next's 404 page until the pages above are built. This does not break the
-  build.
 - **No PDF engine in this environment:** PDF compilation will throw
   `PdfCompilationError` (caught and surfaced as a non-fatal warning) until a
   LaTeX engine is installed. See *How To Run*.
-- **No auth:** the app assumes a single trusted local user. Do not deploy
-  publicly without adding auth (see roadmap Milestone 4).
-- **API integration tests** are not yet written — only pure-logic unit tests
-  exist. Routes were verified manually.
+- **Auth is optional:** leave `APP_AUTH_TOKEN` empty for trusted local use; set
+  it before exposing the app beyond a private machine/network.
+- **API integration tests cover the core routes.** Jobs, applications, master
+  resume, templates, resume-generation misconfiguration, resume downloads, and
+  auth middleware are covered against throwaway SQLite / direct middleware
+  tests. Successful AI/PDF generation still needs fake-boundary coverage.
 
 ---
 
@@ -259,19 +257,13 @@ Milestone 3 (UI) is **partially complete**. The following are **not yet built**:
 
 Prioritized for the next developer/agent:
 
-1. **Build `/jobs/new`** (add-job form). Smallest, unblocks data entry. Client
-   component → `POST /api/jobs` → redirect to the new job's detail page.
-2. **Build `/jobs/[id]`** (detail page). Highest value: it exposes status
-   control, timeline, resume generation, and downloads — all already backed by
-   APIs. Split into a server component (data load) + client sub-components for
-   the interactive controls.
-3. **Build `/settings`** (master resume editor + template manager). Needed
-   before generation is genuinely useful with real data.
-4. **Wire up user feedback**: loading states, error toasts, and
-   `router.refresh()` after mutations so server components re-fetch.
-5. **Milestone 4 hardening** (see `docs/roadmap.md`): API integration tests
-   against a throwaway SQLite DB, search/pagination on the jobs list, and
-   optional single-user auth for non-local deployment.
+1. **Structured Settings editor:** replace raw master-resume JSON editing with
+   typed form sections while still saving through `PUT /api/master-resume`.
+2. **Successful generation-path tests:** add injected/fake OpenAI and PDF
+   boundaries so `POST /api/resumes/generate` can be tested without network or
+   LaTeX.
+3. **Deployment packaging:** add a Dockerfile/deployment guide with a bundled
+   LaTeX engine for reliable PDF export.
 
 Full milestone list lives in [`docs/roadmap.md`](./roadmap.md).
 
@@ -308,11 +300,9 @@ Full milestone list lives in [`docs/roadmap.md`](./roadmap.md).
 
 | Item | Impact | Recommended fix |
 | ---- | ------ | --------------- |
-| Dead nav/links to unbuilt pages (`/jobs/new`, `/jobs/[id]`, `/settings`) | Users hit 404s | Build the pages (see Next Steps) |
-| No API integration tests | Route regressions could slip through | Add Vitest tests hitting handlers against a temp SQLite DB |
-| No auth | Cannot deploy publicly | Add single-user token/session (Milestone 4) |
+| Successful generation path not integration-tested | AI/PDF orchestration regressions could slip through | Add fake OpenAI/PDF boundaries for route-level tests |
 | `force-dynamic` on all pages | Fine for personal use; would not scale | Introduce caching/revalidation only if multi-user |
-| Minimal client-side state/UX | No optimistic updates or toasts | Add after core pages exist |
+| Settings raw JSON editor | Editing master resume is powerful but not friendly | Replace with typed form sections |
 | `openai`/`next`/`zod` etc. have newer majors available | None today (pinned & working) | Upgrade deliberately, one major at a time, re-running tests/build |
 | PDF engine not bundled | PDF disabled unless engine installed | Document install; consider a Docker image with tectonic for deploy |
 
