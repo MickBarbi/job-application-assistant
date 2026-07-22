@@ -6,6 +6,16 @@ incrementally milestone by milestone.
 
 ## [Unreleased]
 
+### Resume-generation test hardening
+
+Added:
+
+- Added dependency injection seams for the resume generation service and route
+  handler so successful generation can be tested with fake OpenAI/PDF
+  boundaries.
+- Added integration tests for successful resume generation, PDF path persistence,
+  timeline-event creation, and non-fatal PDF warning behavior.
+
 ### Settings polish
 
 Added:

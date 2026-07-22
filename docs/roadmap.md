@@ -49,10 +49,14 @@ tests) before the next begins.
   education, and projects.
 - JSON payload preview remains available for advanced inspection/debugging.
 
+## ✅ Resume-generation test hardening
+
+- Successful generation route tests use fake OpenAI/PDF boundaries to verify
+  generated-resume persistence, timeline-event creation, PDF path persistence,
+  and non-fatal PDF warnings without network or LaTeX.
+
 ## 🔜 Next focus candidates
 
-- Add resume-generation integration tests with injected fake OpenAI/PDF
-  boundaries for successful generation paths.
 - Add deployment docs/Dockerfile with a bundled LaTeX engine.
 
 ## 💡 Backlog / ideas
