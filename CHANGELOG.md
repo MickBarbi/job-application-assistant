@@ -6,6 +6,14 @@ incrementally milestone by milestone.
 
 ## [Unreleased]
 
+### Application throughput
+
+Added:
+
+- Added an application kit to job detail pages with a per-job submission
+  checklist and copy-ready recruiter, follow-up, and tracking snippets.
+- Added deterministic tests for application-kit checklist and snippet builders.
+
 ### Job intake speed
 
 Added:

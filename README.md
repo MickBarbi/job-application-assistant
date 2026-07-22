@@ -118,7 +118,7 @@ npm run test
 Unit tests cover the pure, correctness-critical logic: LaTeX escaping and
 template rendering, Zod validation, and the resume-generation pipeline (with a
 fake completer, so no API key or network is needed). The UI currently exposes
-the dashboard, jobs list, paste-to-prefill job creation, job detail/status management, resume
+the dashboard, jobs list, paste-to-prefill job creation, job detail/status management, copy-ready application kits, resume
 generation, resume PDF/`.tex` downloads, Settings for editing the active
 master resume plus managing LaTeX templates, jobs search/filter/pagination, and
 optional single-user auth.

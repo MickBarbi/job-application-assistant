@@ -55,6 +55,13 @@ tests) before the next begins.
   generated-resume persistence, timeline-event creation, PDF path persistence,
   and non-fatal PDF warnings without network or LaTeX.
 
+## ✅ Application throughput helpers
+
+- Added job-detail application kits with a submission checklist and copy-ready
+  recruiter/referral, follow-up, and tracking snippets.
+- Kept helpers deterministic and covered by tests so they work without network or
+  AI configuration.
+
 ## ✅ Job intake speed
 
 - Added paste-to-prefill intake on `/jobs/new` so copied postings can populate
@@ -78,6 +85,7 @@ tests) before the next begins.
 
 - Import a posting by URL fetch/AI extraction beyond the current local paste parser.
 - Cover-letter generation reusing the tailoring pipeline.
+- Daily application batch mode with goals, keyboard shortcuts, and queue triage.
 - Multiple master-resume variants and A/B comparison.
 - Analytics: response rate by status, time-in-stage.
 - Postgres deployment guide for operators who outgrow SQLite.

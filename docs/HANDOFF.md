@@ -174,7 +174,7 @@ job-application-assistant/
 │  ├─ components/
 │  │  ├─ StatusBadge.tsx
 │  │  ├─ feedback/ToastProvider.tsx
-│  │  ├─ jobs/                # Job form, controls, resume generation action
+│  │  ├─ jobs/                # Job form, controls, application kit, resume generation
 │  │  └─ settings/            # Master resume + template editors
 │  └─ lib/
 │     ├─ api.ts               # JSON response + error handling helpers
@@ -184,6 +184,7 @@ job-application-assistant/
 │     ├─ types.ts             # Status constants & domain enums
 │     ├─ validation.ts        # Zod schemas (source of truth)
 │     ├─ jobs/
+│     │  ├─ application-kit.ts # Deterministic checklist/copy-snippet helpers
 │     │  └─ intake.ts         # Local paste-to-prefill job posting parser
 │     ├─ resume/
 │     │  ├─ defaults.ts       # Default LaTeX template + sample master resume
@@ -272,12 +273,13 @@ auth, and route integration tests are all in place.
 Prioritized for the next developer/agent:
 
 1. **Create a PR/merge checkpoint:** the local branch now includes deployment
-   assets plus paste-to-prefill job intake; merge before stacking more large
-   product work if you want a clean GitHub review point.
+   assets, paste-to-prefill job intake, and job-detail application kits; merge
+   before stacking more large product work if you want a clean GitHub review
+   point.
 2. **Settings UX refinements:** consider reorder controls and richer validation
    affordances on top of the structured editor.
 3. **Product expansion:** consider URL-based import/AI extraction, cover-letter
-   generation, and analytics after the current local paste parser is merged.
+   generation, daily batch mode, and analytics after the current helpers merge.
 
 Full milestone list lives in [`docs/roadmap.md`](./roadmap.md).
 
@@ -307,7 +309,9 @@ Full milestone list lives in [`docs/roadmap.md`](./roadmap.md).
   a real bug caught by a unit test; do not "simplify" it away.
 - **Job intake is local first:** `/jobs/new` can parse pasted posting text into
   structured fields without network or AI, keeping the save path as the existing
-  validated `POST /api/jobs` route.
+  validated `POST /api/jobs` route. Job-detail application kits are also
+  deterministic so copy-ready outreach and follow-up helpers remain available
+  without OpenAI configuration.
 - **SQLite by default** for zero-config local use; the datasource is swappable
   to Postgres/MySQL for production.
 

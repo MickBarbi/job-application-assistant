@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { StatusBadge } from "@/components/StatusBadge";
 import { ApplicationControls } from "@/components/jobs/ApplicationControls";
+import { ApplicationKit } from "@/components/jobs/ApplicationKit";
 import { ResumeGenerator } from "@/components/jobs/ResumeGenerator";
 import { isApplicationStatus, type ApplicationStatus } from "@/lib/types";
 
@@ -146,6 +147,16 @@ export default async function JobDetailPage({ params }: Params) {
         </main>
 
         <aside className="space-y-6">
+          <ApplicationKit
+            input={{
+              title: job.title,
+              company: job.company,
+              location: job.location,
+              url: job.url,
+              status,
+              hasGeneratedResume: job.application.generatedResumes.length > 0,
+            }}
+          />
           <ApplicationControls
             applicationId={job.application.id}
             initialStatus={status}
