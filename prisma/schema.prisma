@@ -1,0 +1,123 @@
+// Prisma schema for the Job Application Assistant.
+//
+// SQLite is used by default for zero-config local development. To run against
+// Postgres/MySQL in production, change `provider` below and set DATABASE_URL
+// accordingly, then run `prisma migrate deploy`.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/// A single canonical resume authored by the user, stored as structured JSON
+/// (see MasterResumeData in src/lib/validation.ts). Exactly one is "active" at
+/// a time and used as the source for AI tailoring.
+model MasterResume {
+  id        String   @id @default(cuid())
+  label     String   @default("Default")
+  /// JSON blob validated by the MasterResumeData zod schema.
+  data      String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  generatedResumes GeneratedResume[]
+}
+
+/// A LaTeX template used to render a resume to PDF. Contains a body with
+/// Mustache-style {{placeholders}} that the renderer fills from tailored data.
+model LatexTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  description String   @default("")
+  /// Raw LaTeX source with {{placeholders}}.
+  body        String
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  generatedResumes GeneratedResume[]
+}
+
+/// A job posting the user is tracking.
+model JobPosting {
+  id          String   @id @default(cuid())
+  title       String
+  company     String
+  location    String   @default("")
+  url         String   @default("")
+  source      String   @default("")
+  description String   @default("")
+  salaryRange String   @default("")
+  notes       String   @default("")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  application Application?
+
+  @@index([company])
+}
+
+/// Tracks the lifecycle of an application to a specific job posting.
+/// Status values are defined by APPLICATION_STATUSES in src/lib/types.ts.
+model Application {
+  id           String    @id @default(cuid())
+  status       String    @default("saved")
+  appliedAt    DateTime?
+  nextActionAt DateTime?
+  notes        String    @default("")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  jobPostingId String     @unique
+  jobPosting   JobPosting @relation(fields: [jobPostingId], references: [id], onDelete: Cascade)
+
+  generatedResumes GeneratedResume[]
+  events           ApplicationEvent[]
+
+  @@index([status])
+}
+
+/// An audit-log entry recording status transitions and notable events on an
+/// application, enabling a timeline view.
+model ApplicationEvent {
+  id            String   @id @default(cuid())
+  type          String
+  message       String   @default("")
+  createdAt     DateTime @default(now())
+
+  applicationId String
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([applicationId])
+}
+
+/// A resume tailored to a specific application by the AI generator. Stores the
+/// tailored structured data, the rendered LaTeX source, and (when compiled) a
+/// pointer to the PDF artifact on disk.
+model GeneratedResume {
+  id            String   @id @default(cuid())
+  /// Tailored structured data as JSON (TailoredResumeData shape).
+  tailoredData  String
+  /// Rendered LaTeX source.
+  latexSource   String
+  /// Relative path to the compiled PDF under STORAGE_DIR, if compiled.
+  pdfPath       String?
+  /// Short model-authored summary of what was tailored and why.
+  rationale     String   @default("")
+  model         String   @default("")
+  createdAt     DateTime @default(now())
+
+  applicationId   String
+  application     Application    @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  masterResumeId  String
+  masterResume    MasterResume   @relation(fields: [masterResumeId], references: [id])
+  templateId      String
+  template        LatexTemplate  @relation(fields: [templateId], references: [id])
+
+  @@index([applicationId])
+}

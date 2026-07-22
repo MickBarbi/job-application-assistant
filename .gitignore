@@ -1,0 +1,46 @@
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+
+# next.js
+/.next/
+/out/
+next-env.d.ts
+
+# production
+/build
+
+# testing
+/coverage
+
+# database (SQLite)
+/prisma/*.db
+/prisma/*.db-journal
+/prisma/dev.db*
+
+# generated artifacts
+/storage/
+/tmp/
+
+# env files
+.env
+.env*.local
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# editor / OS
+.DS_Store
+*.pem
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# vitest
+/.vitest/
+
+# TS build info
+*.tsbuildinfo
