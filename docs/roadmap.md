@@ -20,28 +20,44 @@ tests) before the next begins.
 - Service layer for status transitions (auto timeline events, `appliedAt`) and
   resume generation orchestration. Verified end-to-end against the dev server.
 
-## 🚧 Milestone 3 — Dashboard & UI (in progress)
-
-Done so far:
+## ✅ Milestone 3 — Dashboard & UI
 
 - App shell: layout with navigation, Tailwind styles, shared UI primitives, and
   a `StatusBadge` component.
 - Dashboard with summary tiles, pipeline breakdown, recent jobs, and recent
   activity.
 - Jobs list page.
+- Add-job form (`/jobs/new`) that creates postings through the JSON API.
+- Job/application detail page (`/jobs/[id]`) with inline status control, notes,
+  timeline activity, tailored-resume generation, and generated-resume
+  history/downloads.
+- Settings page (`/settings`) for editing the active master resume and managing
+  LaTeX templates.
 
-Still to do (next session):
+## ✅ Milestone 4 — Hardening
 
-- Add-job form (`/jobs/new`) and job/application detail page (`/jobs/[id]`) with
-  inline status control, timeline, and generated-resume history/downloads.
-- Settings page: edit the master resume and manage LaTeX templates.
-
-## 🔜 Milestone 4 — Hardening (planned)
-
-- Automated integration tests for API routes against a test database.
-- Optimistic UI updates and toast notifications.
+- Automated integration tests for API routes against a test database, covering
+  jobs, applications, master resume, templates, resume-generation
+  misconfiguration, resume downloads, and optional auth middleware.
+- Shared toast notifications and optimistic status-select feedback.
 - Pagination and search/filtering on the jobs list.
-- Auth (single-user API token) for non-local deployments.
+- Optional single-user auth via `APP_AUTH_TOKEN` for non-local deployments.
+
+## ✅ Settings polish
+
+- Structured master-resume editor for contact info, summary, skills, experience,
+  education, and projects.
+- JSON payload preview remains available for advanced inspection/debugging.
+
+## ✅ Resume-generation test hardening
+
+- Successful generation route tests use fake OpenAI/PDF boundaries to verify
+  generated-resume persistence, timeline-event creation, PDF path persistence,
+  and non-fatal PDF warnings without network or LaTeX.
+
+## 🔜 Next focus candidates
+
+- Add deployment docs/Dockerfile with a bundled LaTeX engine.
 
 ## 💡 Backlog / ideas
 

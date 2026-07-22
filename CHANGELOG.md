@@ -6,7 +6,48 @@ incrementally milestone by milestone.
 
 ## [Unreleased]
 
-### Milestone 3 — Dashboard & UI (in progress)
+### Documentation
+
+Changed:
+
+- Refreshed `docs/HANDOFF.md` for the next Codex session with the `main` branch
+  rename, local branch-sync guidance, current test count, optional auth env var,
+  and updated repository structure.
+
+### Resume-generation test hardening
+
+Added:
+
+- Added dependency injection seams for the resume generation service and route
+  handler so successful generation can be tested with fake OpenAI/PDF
+  boundaries.
+- Added integration tests for successful resume generation, PDF path persistence,
+  timeline-event creation, and non-fatal PDF warning behavior.
+
+### Settings polish
+
+Added:
+
+- Replaced the raw master-resume JSON editor with structured Settings sections
+  for contact info, summary, skills, experience, education, and projects while
+  preserving the validated `PUT /api/master-resume` save path.
+- Added tested pure helpers for repeatable resume-editor state operations and
+  multiline list normalization.
+
+### Milestone 4 — Hardening
+
+Added:
+
+- API route integration tests against a throwaway SQLite database covering job
+  creation/update/delete, application status transitions, master-resume
+  validation, LaTeX template default/delete invariants, resume generation
+  misconfiguration, and resume download fallbacks.
+- Optional single-user authentication via `APP_AUTH_TOKEN`, accepting bearer
+  tokens and browser-friendly HTTP Basic auth.
+- Jobs list search, status filtering, and pagination.
+- Shared toast notifications for client-side mutation feedback.
+
+### Milestone 3 — Dashboard & UI
 
 Added:
 
@@ -15,9 +56,21 @@ Added:
 - Dashboard page: summary tiles, pipeline breakdown, recent jobs, and recent
   activity (server component reading via Prisma).
 - Jobs list page.
+- Add-job form (`/jobs/new`) that saves postings through `POST /api/jobs` and
+  redirects to the created job detail page.
+- Job/application detail page (`/jobs/[id]`) with posting details, inline status
+  updates, notes editing, timeline activity, tailored-resume generation, and
+  PDF/`.tex` download links for generated resumes.
+- Settings page (`/settings`) for editing the active master resume JSON and
+  managing LaTeX templates, including default selection and template deletion.
 
-Remaining for this milestone: add-job form, job/application detail page, and the
-settings page (master resume + templates). Tracked in the roadmap.
+Changed:
+
+- Documented the completed Milestone 3 UI in README, roadmap, and handoff
+  notes.
+
+Remaining polish for this milestone: fuller feedback patterns such as shared
+toasts/optimistic updates. Tracked in the roadmap.
 
 ### Milestone 2 — API layer
 

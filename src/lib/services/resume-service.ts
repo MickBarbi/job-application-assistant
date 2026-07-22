@@ -5,9 +5,9 @@
  */
 import { prisma } from "@/lib/db";
 import { HttpError } from "@/lib/api";
-import { getCompleter } from "@/lib/openai";
+import { getCompleter, type ChatCompleter } from "@/lib/openai";
 import { generateTailoredResume } from "@/lib/resume/generator";
-import { compileLatexToPdf, PdfCompilationError } from "@/lib/resume/pdf";
+import { compileLatexToPdf, PdfCompilationError, type CompileResult } from "@/lib/resume/pdf";
 import { masterResumeDataSchema } from "@/lib/validation";
 import type { GenerateResumeInput } from "@/lib/validation";
 
@@ -19,6 +19,16 @@ export interface GenerateOutcome {
   /** Set when generation succeeded but PDF compilation was skipped/failed. */
   pdfWarning?: string;
 }
+
+export interface ResumeGenerationDependencies {
+  getCompleter: () => ChatCompleter;
+  compileLatexToPdf: (latexSource: string, id: string) => Promise<CompileResult>;
+}
+
+const defaultDependencies: ResumeGenerationDependencies = {
+  getCompleter,
+  compileLatexToPdf: (latexSource, id) => compileLatexToPdf(latexSource, id),
+};
 
 /**
  * Resolves the master resume and template to use, falling back to the active
@@ -58,7 +68,8 @@ async function resolveInputs(input: GenerateResumeInput) {
 }
 
 export async function generateResumeForApplication(
-  input: GenerateResumeInput
+  input: GenerateResumeInput,
+  dependencies: ResumeGenerationDependencies = defaultDependencies
 ): Promise<GenerateOutcome> {
   const { application, masterResume, template } = await resolveInputs(input);
 
@@ -75,7 +86,7 @@ export async function generateResumeForApplication(
       },
       templateBody: template.body,
     },
-    getCompleter()
+    dependencies.getCompleter()
   );
 
   // Persist first (without PDF) so the generated resume is never lost even if
@@ -109,7 +120,7 @@ export async function generateResumeForApplication(
 
   if (input.compilePdf) {
     try {
-      const { relativePath } = await compileLatexToPdf(latex, record.id);
+      const { relativePath } = await dependencies.compileLatexToPdf(latex, record.id);
       await prisma.generatedResume.update({
         where: { id: record.id },
         data: { pdfPath: relativePath },
