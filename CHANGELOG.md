@@ -6,6 +6,17 @@ incrementally milestone by milestone.
 
 ## [Unreleased]
 
+### Dashboard visual polish
+
+Changed:
+
+- Restyled the dashboard summary tiles with accent colors and icons, replaced
+  the flat pipeline boxes with a proportional, status-colored funnel bar plus a
+  count legend, gave recent jobs company-initial avatars and hover states, and
+  turned recent activity into an event-type-colored timeline.
+- Added a "Documents generated" card surfacing tailored-resume and cover-letter
+  counts, and made the app header sticky with a subtle backdrop blur.
+
 ### Cover-letter generation
 
 Added:
