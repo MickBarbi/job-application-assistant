@@ -51,7 +51,31 @@ export const APPLICATION_EVENT_TYPES = [
   "created",
   "status_changed",
   "resume_generated",
+  "cover_letter_generated",
   "note",
 ] as const;
 
 export type ApplicationEventType = (typeof APPLICATION_EVENT_TYPES)[number];
+
+/** Tones the cover-letter generator can aim for. */
+export const COVER_LETTER_TONES = [
+  "professional",
+  "enthusiastic",
+  "concise",
+] as const;
+
+export type CoverLetterTone = (typeof COVER_LETTER_TONES)[number];
+
+/** Human-friendly labels and guidance for each cover-letter tone. */
+export const COVER_LETTER_TONE_LABELS: Record<CoverLetterTone, string> = {
+  professional: "Professional",
+  enthusiastic: "Enthusiastic",
+  concise: "Concise",
+};
+
+export function isCoverLetterTone(value: unknown): value is CoverLetterTone {
+  return (
+    typeof value === "string" &&
+    (COVER_LETTER_TONES as readonly string[]).includes(value)
+  );
+}

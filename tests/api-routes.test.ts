@@ -12,7 +12,9 @@ import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { PrismaClient } from "@prisma/client";
 import { PdfCompilationError } from "@/lib/resume/pdf";
+import { OpenAIRequestError } from "@/lib/openai";
 import type { ResumeGenerationDependencies } from "@/lib/services/resume-service";
+import type { CoverLetterGenerationDependencies } from "@/lib/services/cover-letter-service";
 
 type JobsRoute = {
   GET: () => Promise<Response>;
@@ -45,6 +47,16 @@ type GenerateResumeRouteHandlerFactory = {
   ) => (request: Request) => Promise<Response>;
 };
 
+type GenerateCoverLetterRoute = {
+  POST: (request: Request) => Promise<Response>;
+};
+
+type GenerateCoverLetterRouteHandlerFactory = {
+  createGenerateCoverLetterPostHandler: (
+    dependencies?: CoverLetterGenerationDependencies
+  ) => (request: Request) => Promise<Response>;
+};
+
 type RouteContext = { params: Promise<{ id: string }> };
 
 let tempDir = "";
@@ -59,6 +71,9 @@ let generateResumeRoute: GenerateResumeRoute;
 let generateResumeRouteHandlerFactory: GenerateResumeRouteHandlerFactory;
 let resumeTexRoute: IdRoute;
 let resumePdfRoute: IdRoute;
+let generateCoverLetterRoute: GenerateCoverLetterRoute;
+let coverLetterRouteHandlerFactory: GenerateCoverLetterRouteHandlerFactory;
+let coverLetterTxtRoute: IdRoute;
 
 beforeAll(async () => {
   tempDir = mkdtempSync(join(tmpdir(), "jaa-api-tests-"));
@@ -87,6 +102,9 @@ beforeAll(async () => {
   generateResumeRouteHandlerFactory = await import("@/lib/services/resume-route-handler");
   resumeTexRoute = await import("@/app/api/resumes/[id]/tex/route");
   resumePdfRoute = await import("@/app/api/resumes/[id]/pdf/route");
+  generateCoverLetterRoute = await import("@/app/api/cover-letters/generate/route");
+  coverLetterRouteHandlerFactory = await import("@/lib/services/cover-letter-route-handler");
+  coverLetterTxtRoute = await import("@/app/api/cover-letters/[id]/txt/route");
 });
 
 afterAll(async () => {
@@ -405,6 +423,130 @@ describe("resume routes", () => {
   });
 });
 
+describe("cover letter routes", () => {
+  it("returns a clear 503 when OpenAI is not configured for generation", async () => {
+    const application = await createApplication();
+    await prisma.masterResume.create({
+      data: {
+        label: "Cover letter source",
+        data: JSON.stringify(minimalResume()),
+        isActive: true,
+      },
+    });
+
+    const response = await generateCoverLetterRoute.POST(
+      jsonRequest("/api/cover-letters/generate", {
+        applicationId: application.id,
+        tone: "professional",
+      })
+    );
+
+    expect(response.status).toBe(503);
+    expect(asRecord(await response.json()).error).toContain("OPENAI_API_KEY");
+  });
+
+  it("persists a generated cover letter and timeline event on success", async () => {
+    const application = await createApplication();
+    const masterResume = await prisma.masterResume.create({
+      data: {
+        label: "Cover letter source",
+        data: JSON.stringify(minimalResume()),
+        isActive: false,
+      },
+    });
+    const post = coverLetterRouteHandlerFactory.createGenerateCoverLetterPostHandler(
+      fakeCoverLetterDependencies()
+    );
+
+    const response = await post(
+      jsonRequest("/api/cover-letters/generate", {
+        applicationId: application.id,
+        masterResumeId: masterResume.id,
+        tone: "enthusiastic",
+      })
+    );
+
+    expect(response.status).toBe(201);
+    const body = asRecord(await response.json());
+    const letterId = expectString(body.id);
+    const stored = await prisma.generatedCoverLetter.findUnique({
+      where: { id: letterId },
+    });
+    const event = await prisma.applicationEvent.findFirst({
+      where: { applicationId: application.id, type: "cover_letter_generated" },
+    });
+
+    expect(body.model).toBe("fake-route-model");
+    expect(stored?.tone).toBe("enthusiastic");
+    expect(stored?.body).toContain("Casey Candidate");
+    expect(stored?.body).toContain("I would love to contribute.");
+    expect(stored?.rationale).toBe("Grounded the letter in existing experience.");
+    expect(event?.message).toContain("enthusiastic");
+    expect(event?.message).toContain("fake-route-model");
+  });
+
+  it("maps an OpenAI request failure to a clear 502", async () => {
+    const application = await createApplication();
+    await prisma.masterResume.create({
+      data: {
+        label: "Cover letter source",
+        data: JSON.stringify(minimalResume()),
+        isActive: true,
+      },
+    });
+    const post = coverLetterRouteHandlerFactory.createGenerateCoverLetterPostHandler({
+      getCompleter: () => ({
+        model: "fake-route-model",
+        complete: async () => {
+          throw new OpenAIRequestError("OpenAI rejected the API key.", 401);
+        },
+      }),
+    });
+
+    const response = await post(
+      jsonRequest("/api/cover-letters/generate", {
+        applicationId: application.id,
+        tone: "professional",
+      })
+    );
+
+    expect(response.status).toBe(502);
+    expect(asRecord(await response.json()).error).toContain("rejected the API key");
+  });
+
+  it("downloads a generated cover letter as text", async () => {
+    const application = await createApplication();
+    const masterResume = await prisma.masterResume.create({
+      data: {
+        label: "Cover letter download source",
+        data: JSON.stringify(minimalResume()),
+        isActive: false,
+      },
+    });
+    const letter = await prisma.generatedCoverLetter.create({
+      data: {
+        applicationId: application.id,
+        masterResumeId: masterResume.id,
+        body: "Dear Hiring Manager,\n\nHello.\n\nSincerely,\nCasey Candidate",
+        structured: JSON.stringify({ paragraphs: ["Hello."] }),
+        tone: "professional",
+        rationale: "Test",
+        model: "fake-model",
+      },
+    });
+    const getTxt = requireHandler(coverLetterTxtRoute.GET);
+
+    const response = await getTxt(
+      new Request(`http://test/api/cover-letters/${letter.id}/txt`),
+      context(letter.id)
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("Content-Type")).toContain("text/plain");
+    expect(await response.text()).toContain("Casey Candidate");
+  });
+});
+
 function jsonRequest(path: string, body: unknown) {
   return new Request(`http://test${path}`, {
     method: "POST",
@@ -490,6 +632,24 @@ function fakeGenerationDependencies({
       }),
     }),
     compileLatexToPdf: compile,
+  };
+}
+
+function fakeCoverLetterDependencies(): CoverLetterGenerationDependencies {
+  return {
+    getCompleter: () => ({
+      model: "fake-route-model",
+      complete: async () =>
+        JSON.stringify({
+          greeting: "Dear Workflow Co team,",
+          paragraphs: [
+            "I am excited about this role.",
+            "I would love to contribute.",
+          ],
+          closing: "Sincerely,",
+          rationale: "Grounded the letter in existing experience.",
+        }),
+    }),
   };
 }
 

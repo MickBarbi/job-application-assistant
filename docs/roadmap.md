@@ -76,15 +76,26 @@ tests) before the next begins.
 - Documented production env setup, Tectonic-first LaTeX/PDF installation,
   auth recommendations, backup guidance, and a deployment smoke-test checklist.
 
+## ✅ Cover-letter generation
+
+- Added AI cover-letter generation reusing the tailoring architecture: a
+  `GeneratedCoverLetter` model, a pure generator with the anti-fabrication
+  guardrail, an injectable service + route factory, `POST /api/cover-letters/
+  generate`, and a `.txt` download route.
+- Job-detail UI: tone selector (professional / enthusiastic / concise),
+  copy-to-clipboard, and a generated-letter history section.
+- Deterministic unit tests plus route integration tests (fake completer).
+
 ## 🔜 Next focus candidates
 
 - Exercise the Docker path on the target host and tune image size/startup flow if
   needed.
+- Cover-letter polish: optional PDF rendering via a LaTeX letter template, and
+  editing a draft before saving.
 
 ## 💡 Backlog / ideas
 
 - Import a posting by URL fetch/AI extraction beyond the current local paste parser.
-- Cover-letter generation reusing the tailoring pipeline.
 - Daily application batch mode with goals, keyboard shortcuts, and queue triage.
 - Multiple master-resume variants and A/B comparison.
 - Analytics: response rate by status, time-in-stage.

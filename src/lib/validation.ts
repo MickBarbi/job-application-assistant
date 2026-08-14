@@ -6,7 +6,7 @@
  * never drift apart.
  */
 import { z } from "zod";
-import { APPLICATION_STATUSES } from "./types";
+import { APPLICATION_STATUSES, COVER_LETTER_TONES } from "./types";
 
 /* -------------------------------------------------------------------------- */
 /* Resume data                                                                */
@@ -82,6 +82,29 @@ export const tailoredResumeDataSchema = masterResumeDataSchema.extend({
 export type TailoredResumeData = z.infer<typeof tailoredResumeDataSchema>;
 
 /* -------------------------------------------------------------------------- */
+/* Cover letter data                                                          */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * The structured cover letter produced by the AI. Kept as discrete pieces so
+ * the app can assemble the final text deterministically (and re-render it in
+ * other formats later). As with resumes, the AI may only draw on facts already
+ * present in the master resume — it must never invent experience or claims.
+ */
+export const coverLetterDataSchema = z.object({
+  greeting: z.string().default("Dear Hiring Manager,"),
+  /** Body paragraphs, in order. At least one is required. */
+  paragraphs: z.array(z.string().min(1)).min(1, "At least one paragraph is required"),
+  closing: z.string().default("Sincerely,"),
+  rationale: z
+    .string()
+    .default("")
+    .describe("Short explanation of how the letter was tailored to the job."),
+});
+
+export type CoverLetterData = z.infer<typeof coverLetterDataSchema>;
+
+/* -------------------------------------------------------------------------- */
 /* API request bodies                                                         */
 /* -------------------------------------------------------------------------- */
 
@@ -131,3 +154,13 @@ export const generateResumeInputSchema = z.object({
 });
 
 export type GenerateResumeInput = z.infer<typeof generateResumeInputSchema>;
+
+export const generateCoverLetterInputSchema = z.object({
+  applicationId: z.string().min(1),
+  masterResumeId: z.string().optional(),
+  tone: z.enum(COVER_LETTER_TONES).default("professional"),
+});
+
+export type GenerateCoverLetterInput = z.infer<
+  typeof generateCoverLetterInputSchema
+>;
