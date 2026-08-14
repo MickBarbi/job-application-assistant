@@ -6,6 +6,16 @@ incrementally milestone by milestone.
 
 ## [Unreleased]
 
+### Testing
+
+Fixed:
+
+- Made the API route integration tests (`tests/api-routes.test.ts`) run
+  cross-platform by invoking the Prisma CLI via `process.execPath` instead of
+  `npx`, which could not be spawned on Windows without a shell and left the 13
+  API tests skipped with a misleading `$disconnect` teardown crash. Guarded
+  `afterAll` so a setup failure surfaces the real error. Full suite: 56/56 pass.
+
 ### Application throughput
 
 Added:
