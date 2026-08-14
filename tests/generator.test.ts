@@ -112,6 +112,28 @@ describe("generateTailoredResume", () => {
     expect(call.json).toBe(true);
   });
 
+  it("recovers when the model's first response is malformed JSON", async () => {
+    const completer: ChatCompleter = {
+      model: "fake-model",
+      complete: vi
+        .fn<(req: CompletionRequest) => Promise<string>>()
+        .mockResolvedValueOnce("Here is your resume: not valid json")
+        .mockResolvedValueOnce(validTailored),
+    };
+
+    const result = await generateTailoredResume(
+      {
+        master: SAMPLE_MASTER_RESUME,
+        job: { title: "Frontend Engineer", company: "Aurora" },
+        templateBody: DEFAULT_TEMPLATE_BODY,
+      },
+      completer
+    );
+
+    expect(result.tailored.summary).toBe("Tailored summary");
+    expect(completer.complete).toHaveBeenCalledTimes(2);
+  });
+
   it("rejects an invalid master resume before calling the model", async () => {
     const completer = fakeCompleter(validTailored);
     await expect(

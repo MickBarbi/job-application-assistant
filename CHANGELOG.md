@@ -6,6 +6,27 @@ incrementally milestone by milestone.
 
 ## [Unreleased]
 
+### Provider-neutral / local-model generation
+
+Added:
+
+- Added a shared `completeJson` helper that retries generation once with a
+  corrective prompt when a model returns malformed JSON, making resume and
+  cover-letter generation robust against smaller/local models. Covered by unit
+  tests plus end-to-end recovery tests in both generator suites.
+
+Changed:
+
+- The OpenAI wrapper now omits `temperature` from requests unless explicitly
+  set (some backends, e.g. the native Claude API, reject it), and the generators
+  no longer hardcode a temperature — keeping the client usable across OpenAI,
+  Claude, and any OpenAI-compatible endpoint.
+- Tightened both system prompts to demand a single raw JSON object with no
+  markdown fences.
+- Documented running generation locally against Ollama (an OpenAI-compatible
+  server) in the README and `.env.example`, including LAN access from a second
+  machine.
+
 ### Cover-letter draft editing
 
 Added:
