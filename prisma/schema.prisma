@@ -25,7 +25,8 @@ model MasterResume {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  generatedResumes GeneratedResume[]
+  generatedResumes      GeneratedResume[]
+  generatedCoverLetters GeneratedCoverLetter[]
 }
 
 /// A LaTeX template used to render a resume to PDF. Contains a body with
@@ -76,8 +77,9 @@ model Application {
   jobPostingId String     @unique
   jobPosting   JobPosting @relation(fields: [jobPostingId], references: [id], onDelete: Cascade)
 
-  generatedResumes GeneratedResume[]
-  events           ApplicationEvent[]
+  generatedResumes      GeneratedResume[]
+  generatedCoverLetters GeneratedCoverLetter[]
+  events                ApplicationEvent[]
 
   @@index([status])
 }
@@ -118,6 +120,32 @@ model GeneratedResume {
   masterResume    MasterResume   @relation(fields: [masterResumeId], references: [id])
   templateId      String
   template        LatexTemplate  @relation(fields: [templateId], references: [id])
+
+  @@index([applicationId])
+}
+
+/// A cover letter tailored to a specific application by the AI generator.
+/// Stores the assembled plain-text letter plus the structured pieces and a
+/// short rationale. Like GeneratedResume, the AI may only draw on facts already
+/// present in the master resume — it must never invent experience.
+model GeneratedCoverLetter {
+  id           String   @id @default(cuid())
+  /// The full, assembled cover-letter text ready to copy or download.
+  body         String
+  /// Structured pieces (greeting, paragraphs, closing) as JSON, kept for
+  /// possible future re-rendering (CoverLetterData shape).
+  structured   String
+  /// Requested tone (see COVER_LETTER_TONES in src/lib/types.ts).
+  tone         String   @default("professional")
+  /// Short model-authored explanation of the tailoring choices.
+  rationale    String   @default("")
+  model        String   @default("")
+  createdAt    DateTime @default(now())
+
+  applicationId  String
+  application    Application  @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  masterResumeId String
+  masterResume   MasterResume @relation(fields: [masterResumeId], references: [id])
 
   @@index([applicationId])
 }

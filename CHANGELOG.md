@@ -6,6 +6,31 @@ incrementally milestone by milestone.
 
 ## [Unreleased]
 
+### Cover-letter generation
+
+Added:
+
+- Added AI cover-letter generation: a new `GeneratedCoverLetter` model, a
+  `coverLetterDataSchema`, a pure generator (`src/lib/coverletter/generator.ts`)
+  with the same anti-fabrication guardrail as the resume pipeline, an injectable
+  service + route factory, and `POST /api/cover-letters/generate`.
+- Added a tone selector (professional / enthusiastic / concise) on the job
+  detail page, a copy-to-clipboard button, a generated-letter history section,
+  and a `.txt` download route (`GET /api/cover-letters/[id]/txt`).
+- Added deterministic unit tests for the prompt builder, response parsing, and
+  the letter assembler, plus route integration tests for the 503-when-
+  unconfigured, successful-generation, and download paths (fake completer, no
+  network). Full suite: 71 tests.
+
+### Robustness
+
+Changed:
+
+- Translated OpenAI SDK request failures (invalid key, rate limit, upstream
+  outage) into a typed `OpenAIRequestError` mapped to a clear `502` with an
+  actionable message, instead of an opaque `500`. Benefits both resume and
+  cover-letter generation. Covered by a route integration test.
+
 ### Testing
 
 Fixed:

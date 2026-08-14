@@ -87,6 +87,14 @@ export function handle(
         503
       );
     }
+    // Upstream OpenAI request failure (bad key, rate limit, outage) → 502 with
+    // the concise, user-facing message rather than a generic 500.
+    if (name === "OpenAIRequestError") {
+      return error(
+        err instanceof Error ? err.message : "OpenAI request failed.",
+        502
+      );
+    }
     console.error("Unhandled API error:", err);
     return error("Internal server error.", 500);
   });

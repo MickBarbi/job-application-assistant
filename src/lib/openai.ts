@@ -31,6 +31,37 @@ export class OpenAINotConfiguredError extends Error {
   }
 }
 
+/**
+ * Raised when the OpenAI API rejects or fails a request (bad key, rate limit,
+ * upstream outage). Carries a user-facing message so the route layer can return
+ * a clear status instead of a generic 500.
+ */
+export class OpenAIRequestError extends Error {
+  constructor(
+    message: string,
+    readonly status?: number
+  ) {
+    super(message);
+    this.name = "OpenAIRequestError";
+  }
+}
+
+/** Turns an OpenAI SDK error into a concise, user-facing message. */
+function describeOpenAIError(err: InstanceType<typeof OpenAI.APIError>): string {
+  switch (err.status) {
+    case 401:
+      return "OpenAI rejected the API key. Check OPENAI_API_KEY in your environment.";
+    case 429:
+      return "OpenAI rate limit or quota reached. Wait a moment and try again.";
+    case 500:
+    case 502:
+    case 503:
+      return "OpenAI is temporarily unavailable. Please try again shortly.";
+    default:
+      return `OpenAI request failed${err.status ? ` (status ${err.status})` : ""}.`;
+  }
+}
+
 class OpenAICompleter implements ChatCompleter {
   private client: OpenAI;
   readonly model: string;
@@ -44,15 +75,23 @@ class OpenAICompleter implements ChatCompleter {
   }
 
   async complete(req: CompletionRequest): Promise<string> {
-    const response = await this.client.chat.completions.create({
-      model: this.model,
-      temperature: req.temperature ?? 0.4,
-      response_format: req.json ? { type: "json_object" } : undefined,
-      messages: [
-        { role: "system", content: req.system },
-        { role: "user", content: req.user },
-      ],
-    });
+    let response;
+    try {
+      response = await this.client.chat.completions.create({
+        model: this.model,
+        temperature: req.temperature ?? 0.4,
+        response_format: req.json ? { type: "json_object" } : undefined,
+        messages: [
+          { role: "system", content: req.system },
+          { role: "user", content: req.user },
+        ],
+      });
+    } catch (err) {
+      if (err instanceof OpenAI.APIError) {
+        throw new OpenAIRequestError(describeOpenAIError(err), err.status);
+      }
+      throw err;
+    }
 
     const content = response.choices[0]?.message?.content;
     if (!content) {

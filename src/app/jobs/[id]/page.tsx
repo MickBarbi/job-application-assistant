@@ -5,7 +5,14 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { ApplicationControls } from "@/components/jobs/ApplicationControls";
 import { ApplicationKit } from "@/components/jobs/ApplicationKit";
 import { ResumeGenerator } from "@/components/jobs/ResumeGenerator";
-import { isApplicationStatus, type ApplicationStatus } from "@/lib/types";
+import { CoverLetterGenerator } from "@/components/jobs/CoverLetterGenerator";
+import { CopyButton } from "@/components/CopyButton";
+import {
+  isApplicationStatus,
+  COVER_LETTER_TONE_LABELS,
+  isCoverLetterTone,
+  type ApplicationStatus,
+} from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +33,17 @@ export default async function JobDetailPage({ params }: Params) {
               rationale: true,
               model: true,
               pdfPath: true,
+              createdAt: true,
+            },
+          },
+          generatedCoverLetters: {
+            orderBy: { createdAt: "desc" },
+            select: {
+              id: true,
+              body: true,
+              rationale: true,
+              tone: true,
+              model: true,
               createdAt: true,
             },
           },
@@ -124,6 +142,47 @@ export default async function JobDetailPage({ params }: Params) {
 
           <section className="card p-5">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+              Cover letters
+            </h2>
+            {job.application.generatedCoverLetters.length === 0 ? (
+              <p className="mt-4 text-sm text-slate-500">
+                No cover letters yet. Draft one from the sidebar.
+              </p>
+            ) : (
+              <ul className="mt-4 space-y-4">
+                {job.application.generatedCoverLetters.map((letter) => (
+                  <li key={letter.id} className="rounded-lg border border-slate-200 bg-slate-50/60 p-4">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs font-medium text-slate-700">
+                          {isCoverLetterTone(letter.tone)
+                            ? COVER_LETTER_TONE_LABELS[letter.tone]
+                            : letter.tone}
+                        </span>
+                        <p className="text-sm font-medium">{formatDateTime(letter.createdAt)}</p>
+                        <p className="text-xs text-slate-500">· {letter.model}</p>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <CopyButton value={letter.body} label="Copy text" className="btn-secondary text-xs" />
+                        <a className="btn-secondary text-xs" href={`/api/cover-letters/${letter.id}/txt`}>
+                          .txt
+                        </a>
+                      </div>
+                    </div>
+                    <pre className="mt-3 max-h-72 overflow-auto whitespace-pre-wrap border-l-2 border-slate-300 bg-white p-3 font-sans text-sm leading-6 text-slate-700">
+                      {letter.body}
+                    </pre>
+                    {letter.rationale && (
+                      <p className="mt-2 text-xs italic text-slate-500">{letter.rationale}</p>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+
+          <section className="card p-5">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
               Timeline
             </h2>
             {job.application.events.length === 0 ? (
@@ -163,6 +222,7 @@ export default async function JobDetailPage({ params }: Params) {
             initialNotes={job.application.notes}
           />
           <ResumeGenerator applicationId={job.application.id} />
+          <CoverLetterGenerator applicationId={job.application.id} />
           {job.notes && (
             <section className="card p-5">
               <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">

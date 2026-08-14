@@ -7,6 +7,9 @@ An AI-powered system for managing a job search end to end:
 - **Generate tailored resumes** from a single *master resume* and a LaTeX
   template, using the OpenAI API to rephrase, reorder, and select the most
   relevant content for each posting — without fabricating facts.
+- **Draft tailored cover letters** from the same master resume, with a choice of
+  tone, copy-to-clipboard, and a `.txt` download — grounded only in facts the
+  resume already contains.
 - **Export PDFs** by compiling the generated LaTeX with a local engine
   (tectonic / pdflatex / xelatex).
 - **A clean dashboard** summarising your pipeline at a glance.
@@ -119,6 +122,7 @@ Unit tests cover the pure, correctness-critical logic: LaTeX escaping and
 template rendering, Zod validation, and the resume-generation pipeline (with a
 fake completer, so no API key or network is needed). The UI currently exposes
 the dashboard, jobs list, paste-to-prefill job creation, job detail/status management, copy-ready application kits, resume
-generation, resume PDF/`.tex` downloads, Settings for editing the active
-master resume plus managing LaTeX templates, jobs search/filter/pagination, and
-optional single-user auth.
+generation, resume PDF/`.tex` downloads, cover-letter generation with tone
+selection and `.txt` download, Settings for editing the active master resume
+plus managing LaTeX templates, jobs search/filter/pagination, and optional
+single-user auth.
