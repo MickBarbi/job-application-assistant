@@ -24,7 +24,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <div className="min-h-screen">
-          <header className="border-b border-slate-200 bg-white">
+          <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/80 backdrop-blur">
             <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
               <Link href="/" className="flex items-center gap-2 font-semibold">
                 <span className="text-xl">📋</span>
