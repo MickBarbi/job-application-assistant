@@ -65,7 +65,12 @@ beforeAll(async () => {
   process.env.DATABASE_URL = `file:${join(tempDir, "test.db")}`;
   process.env.OPENAI_API_KEY = "";
 
-  execFileSync("npx", ["prisma", "db", "push", "--skip-generate"], {
+  // Run the Prisma CLI via Node directly rather than `npx` so the schema push
+  // works cross-platform. On Windows `npx` resolves to `npx.cmd`, which
+  // execFileSync cannot spawn without a shell; invoking the CLI entry point
+  // with process.execPath avoids that platform-specific resolution entirely.
+  const prismaCli = join(process.cwd(), "node_modules", "prisma", "build", "index.js");
+  execFileSync(process.execPath, [prismaCli, "db", "push", "--skip-generate"], {
     cwd: process.cwd(),
     env: process.env,
     stdio: "pipe",
@@ -85,8 +90,12 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await prisma.$disconnect();
-  rmSync(tempDir, { recursive: true, force: true });
+  // `prisma` may be undefined if beforeAll failed before importing the client;
+  // guard so teardown surfaces the real setup error instead of a $disconnect crash.
+  await prisma?.$disconnect();
+  if (tempDir) {
+    rmSync(tempDir, { recursive: true, force: true });
+  }
 });
 
 describe("job routes", () => {

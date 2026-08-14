@@ -375,7 +375,7 @@ npm run start        # serve the production build
 ### Testing / quality
 
 ```bash
-npm run test         # Vitest (51 tests at latest local run)
+npm run test         # Vitest (56 tests at latest local run)
 npm run typecheck    # tsc --noEmit
 npm run lint         # next lint
 ```
@@ -446,7 +446,7 @@ All checks run on 2026-07-22, Node v22.22.2:
 | `npm install` / dependency tree | ✅ resolves (one harmless extraneous transitive `@emnapi/runtime`) |
 | `npm run typecheck`           | ✅ pass (0 errors) |
 | `npm run lint`                | ✅ pass (0 warnings/errors) |
-| `npm run test`                | ✅ 51/51 pass |
+| `npm run test`                | ✅ 56/56 pass |
 | `npm run build`               | ✅ success — app routes + middleware compiled |
 | Git working tree              | ✅ clean locally; remote push/fetch requires credentials/network outside this environment |
 | LaTeX engine present          | ⚠️ none installed here (PDF degrades gracefully by design) |
