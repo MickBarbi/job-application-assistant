@@ -74,6 +74,7 @@ let resumePdfRoute: IdRoute;
 let generateCoverLetterRoute: GenerateCoverLetterRoute;
 let coverLetterRouteHandlerFactory: GenerateCoverLetterRouteHandlerFactory;
 let coverLetterTxtRoute: IdRoute;
+let coverLetterIdRoute: IdRoute;
 
 beforeAll(async () => {
   tempDir = mkdtempSync(join(tmpdir(), "jaa-api-tests-"));
@@ -105,6 +106,7 @@ beforeAll(async () => {
   generateCoverLetterRoute = await import("@/app/api/cover-letters/generate/route");
   coverLetterRouteHandlerFactory = await import("@/lib/services/cover-letter-route-handler");
   coverLetterTxtRoute = await import("@/app/api/cover-letters/[id]/txt/route");
+  coverLetterIdRoute = await import("@/app/api/cover-letters/[id]/route");
 });
 
 afterAll(async () => {
@@ -545,6 +547,58 @@ describe("cover letter routes", () => {
     expect(response.headers.get("Content-Type")).toContain("text/plain");
     expect(await response.text()).toContain("Casey Candidate");
   });
+
+  it("saves an edited cover-letter body and flags it as edited", async () => {
+    const letter = await createCoverLetter("Original body.");
+    const patch = requireHandler(coverLetterIdRoute.PATCH);
+
+    const response = await patch(
+      jsonRequest(`/api/cover-letters/${letter.id}`, { body: "Rewritten body." }),
+      context(letter.id)
+    );
+
+    expect(response.status).toBe(200);
+    const body = asRecord(await response.json());
+    expect(body.body).toBe("Rewritten body.");
+    expect(body.edited).toBe(true);
+
+    const stored = await prisma.generatedCoverLetter.findUnique({
+      where: { id: letter.id },
+    });
+    expect(stored?.body).toBe("Rewritten body.");
+    expect(stored?.edited).toBe(true);
+  });
+
+  it("rejects an empty or whitespace-only edited body", async () => {
+    const letter = await createCoverLetter("Original body.");
+    const patch = requireHandler(coverLetterIdRoute.PATCH);
+
+    for (const body of ["", "   \n  "]) {
+      const response = await patch(
+        jsonRequest(`/api/cover-letters/${letter.id}`, { body }),
+        context(letter.id)
+      );
+      expect(response.status).toBe(400);
+    }
+
+    // The original body must be untouched after rejected edits.
+    const stored = await prisma.generatedCoverLetter.findUnique({
+      where: { id: letter.id },
+    });
+    expect(stored?.body).toBe("Original body.");
+    expect(stored?.edited).toBe(false);
+  });
+
+  it("returns 404 when editing a missing cover letter", async () => {
+    const patch = requireHandler(coverLetterIdRoute.PATCH);
+
+    const response = await patch(
+      jsonRequest("/api/cover-letters/does-not-exist", { body: "Hi." }),
+      context("does-not-exist")
+    );
+
+    expect(response.status).toBe(404);
+  });
 });
 
 function jsonRequest(path: string, body: unknown) {
@@ -651,6 +705,28 @@ function fakeCoverLetterDependencies(): CoverLetterGenerationDependencies {
         }),
     }),
   };
+}
+
+async function createCoverLetter(body: string) {
+  const application = await createApplication();
+  const masterResume = await prisma.masterResume.create({
+    data: {
+      label: "Cover letter edit source",
+      data: JSON.stringify(minimalResume()),
+      isActive: false,
+    },
+  });
+  return prisma.generatedCoverLetter.create({
+    data: {
+      applicationId: application.id,
+      masterResumeId: masterResume.id,
+      body,
+      structured: JSON.stringify({ paragraphs: [body] }),
+      tone: "professional",
+      rationale: "Test",
+      model: "fake-model",
+    },
+  });
 }
 
 async function createGeneratedResume({ pdfPath }: { pdfPath: string | null }) {

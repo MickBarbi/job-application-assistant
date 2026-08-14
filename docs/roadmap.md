@@ -90,8 +90,8 @@ tests) before the next begins.
 
 - Exercise the Docker path on the target host and tune image size/startup flow if
   needed.
-- Cover-letter polish: optional PDF rendering via a LaTeX letter template, and
-  editing a draft before saving.
+- Cover-letter polish: optional PDF rendering via a LaTeX letter template.
+  (Inline draft editing after generation is now done.)
 
 ## 💡 Backlog / ideas
 

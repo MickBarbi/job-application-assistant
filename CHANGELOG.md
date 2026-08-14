@@ -6,6 +6,20 @@ incrementally milestone by milestone.
 
 ## [Unreleased]
 
+### Cover-letter draft editing
+
+Added:
+
+- Added inline editing of a generated cover letter: an "Edit" affordance opens a
+  textarea, and `PATCH /api/cover-letters/[id]` saves the revised body and flags
+  the record as edited (shown as an "Edited" badge). The saved body flows through
+  to the copy and `.txt` download actions.
+- Added `edited` and `updatedAt` columns to `GeneratedCoverLetter`, a
+  trim-then-validate `coverLetterUpdateSchema` (rejects empty/whitespace-only
+  bodies), and a `CoverLetterCard` client component for the view/edit toggle.
+- Added route integration tests for the successful save, empty/whitespace
+  rejection (original preserved), and missing-record (404) paths.
+
 ### Dashboard visual polish
 
 Changed:
