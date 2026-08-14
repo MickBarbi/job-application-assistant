@@ -110,3 +110,16 @@ export async function getGeneratedCoverLetter(id: string) {
   if (!record) throw new HttpError(404, "Generated cover letter not found.");
   return record;
 }
+
+/**
+ * Saves a user-edited cover-letter body, flagging the record as edited. The
+ * `.txt` download and copy actions read this same `body`, so edits flow through
+ * everywhere once saved.
+ */
+export async function updateCoverLetterBody(id: string, body: string) {
+  await getGeneratedCoverLetter(id); // 404s if it doesn't exist.
+  return prisma.generatedCoverLetter.update({
+    where: { id },
+    data: { body, edited: true },
+  });
+}

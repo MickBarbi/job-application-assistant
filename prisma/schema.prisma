@@ -140,7 +140,10 @@ model GeneratedCoverLetter {
   /// Short model-authored explanation of the tailoring choices.
   rationale    String   @default("")
   model        String   @default("")
+  /// True once the user has edited the AI-generated body.
+  edited       Boolean  @default(false)
   createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   applicationId  String
   application    Application  @relation(fields: [applicationId], references: [id], onDelete: Cascade)

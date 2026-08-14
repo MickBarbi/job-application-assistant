@@ -164,3 +164,10 @@ export const generateCoverLetterInputSchema = z.object({
 export type GenerateCoverLetterInput = z.infer<
   typeof generateCoverLetterInputSchema
 >;
+
+export const coverLetterUpdateSchema = z.object({
+  // Trim first so a whitespace-only body is rejected and never stored.
+  body: z.string().trim().min(1, "Cover letter cannot be empty").max(20000),
+});
+
+export type CoverLetterUpdateInput = z.infer<typeof coverLetterUpdateSchema>;
