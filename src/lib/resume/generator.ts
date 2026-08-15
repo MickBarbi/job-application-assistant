@@ -17,6 +17,7 @@ import {
   type TailoredResumeData,
 } from "@/lib/validation";
 import type { ChatCompleter } from "@/lib/openai";
+import { completeJson } from "@/lib/json-completion";
 import { renderResumeLatex } from "./latex";
 
 export interface JobContext {
@@ -51,7 +52,8 @@ export const SYSTEM_PROMPT = [
   "   master; do not fabricate metrics that are not there.",
   "4. Keep the same JSON shape as the input resume, adding only a top-level",
   '   "rationale" string that briefly explains your tailoring choices.',
-  "5. Respond with a single JSON object and nothing else.",
+  "5. Respond with a single, raw JSON object and nothing else — no markdown code",
+  "   fences, no commentary before or after the JSON.",
 ].join("\n");
 
 /** Builds the user prompt. Pure — safe to unit test. */
@@ -112,14 +114,16 @@ export async function generateTailoredResume(
   // Defensive: ensure the master conforms before spending a token.
   const master = masterResumeDataSchema.parse(params.master);
 
-  const raw = await completer.complete({
-    system: SYSTEM_PROMPT,
-    user: buildUserPrompt({ ...params, master }),
-    json: true,
-    temperature: 0.4,
-  });
+  const tailored = await completeJson(
+    completer,
+    {
+      system: SYSTEM_PROMPT,
+      user: buildUserPrompt({ ...params, master }),
+      json: true,
+    },
+    parseTailoredResponse
+  );
 
-  const tailored = parseTailoredResponse(raw);
   const latex = renderResumeLatex(params.templateBody, tailored);
 
   return { tailored, latex, model: completer.model };

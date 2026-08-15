@@ -79,7 +79,10 @@ class OpenAICompleter implements ChatCompleter {
     try {
       response = await this.client.chat.completions.create({
         model: this.model,
-        temperature: req.temperature ?? 0.4,
+        // Only send temperature when explicitly requested. Some backends
+        // (e.g. the native Claude API) reject the parameter outright, so
+        // omitting it keeps the wrapper usable across providers.
+        ...(req.temperature !== undefined ? { temperature: req.temperature } : {}),
         response_format: req.json ? { type: "json_object" } : undefined,
         messages: [
           { role: "system", content: req.system },

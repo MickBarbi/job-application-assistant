@@ -129,6 +129,28 @@ describe("generateCoverLetter", () => {
     expect(call.json).toBe(true);
   });
 
+  it("recovers when the model's first response is malformed JSON", async () => {
+    const completer: ChatCompleter = {
+      model: "fake-model",
+      complete: vi
+        .fn<(req: CompletionRequest) => Promise<string>>()
+        .mockResolvedValueOnce("Sure! Here's the letter (not json)")
+        .mockResolvedValueOnce(validLetter),
+    };
+
+    const result = await generateCoverLetter(
+      {
+        master: SAMPLE_MASTER_RESUME,
+        job: { title: "Frontend Engineer", company: "Aurora" },
+        tone: "professional",
+      },
+      completer
+    );
+
+    expect(result.data.paragraphs).toHaveLength(2);
+    expect(completer.complete).toHaveBeenCalledTimes(2);
+  });
+
   it("rejects an invalid master resume before calling the model", async () => {
     const completer = fakeCompleter(validLetter);
     await expect(

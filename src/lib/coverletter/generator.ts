@@ -18,6 +18,7 @@ import {
 } from "@/lib/validation";
 import { COVER_LETTER_TONE_LABELS, type CoverLetterTone } from "@/lib/types";
 import type { ChatCompleter } from "@/lib/openai";
+import { completeJson } from "@/lib/json-completion";
 
 export interface CoverLetterJobContext {
   title: string;
@@ -67,6 +68,8 @@ export const SYSTEM_PROMPT = [
   "   `paragraphs` holds the body paragraphs in order (no greeting or signature).",
   "   `closing` is a sign-off phrase only (e.g. \"Sincerely,\"). `rationale`",
   "   briefly explains the tailoring choices.",
+  "5. Respond with a single, raw JSON object and nothing else — no markdown code",
+  "   fences, no commentary before or after the JSON.",
 ].join("\n");
 
 /** Builds the user prompt. Pure — safe to unit test. */
@@ -149,14 +152,16 @@ export async function generateCoverLetter(
   // Defensive: ensure the master conforms before spending a token.
   const master = masterResumeDataSchema.parse(params.master);
 
-  const raw = await completer.complete({
-    system: SYSTEM_PROMPT,
-    user: buildCoverLetterPrompt({ ...params, master }),
-    json: true,
-    temperature: 0.5,
-  });
+  const data = await completeJson(
+    completer,
+    {
+      system: SYSTEM_PROMPT,
+      user: buildCoverLetterPrompt({ ...params, master }),
+      json: true,
+    },
+    parseCoverLetterResponse
+  );
 
-  const data = parseCoverLetterResponse(raw);
   const body = assembleCoverLetter(data, master.contact.name);
 
   return { data, body, model: completer.model };

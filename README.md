@@ -54,6 +54,25 @@ PDF export compiles LaTeX with an external engine. Install one of:
 If no engine is installed, resume generation still works and you can download
 the raw `.tex`; only the PDF step is skipped with a clear message.
 
+### Optional: run the AI locally (Ollama)
+
+Generation talks to any **OpenAI-compatible** chat API, so you can run it on
+your own hardware for free with [Ollama](https://ollama.com/) instead of a paid
+key. Pull a model (`ollama pull llama3.1`) and point the app at it:
+
+```bash
+OPENAI_API_KEY="ollama"                      # any non-empty string works
+OPENAI_BASE_URL="http://localhost:11434/v1"  # or http://<desktop-ip>:11434/v1
+OPENAI_MODEL="llama3.1"
+```
+
+To run the model on another machine (e.g. a desktop with a GPU) and use the app
+from your laptop, start Ollama with `OLLAMA_HOST=0.0.0.0:11434` so it listens on
+your LAN, then use the desktop's IP in `OPENAI_BASE_URL`. Prefer a capable model
+(7B+) for reliable structured output — the generator retries once on malformed
+JSON, but tiny models are still hit-or-miss, and always review AI output for
+accuracy.
+
 ---
 
 ## Scripts
@@ -82,7 +101,7 @@ All configuration is via environment variables (see [`.env.example`](./.env.exam
 | `DATABASE_URL`    | `file:./dev.db`  | Prisma datasource URL                      |
 | `OPENAI_API_KEY`  | —                | Enables AI resume tailoring                |
 | `OPENAI_MODEL`    | `gpt-4o`         | Chat model used for tailoring              |
-| `OPENAI_BASE_URL` | —                | Optional override (proxy/Azure gateway)    |
+| `OPENAI_BASE_URL` | —                | Optional override (proxy, Azure, or local Ollama) |
 | `LATEX_ENGINE`    | `tectonic`       | `tectonic` \| `pdflatex` \| `xelatex`      |
 | `STORAGE_DIR`     | `./storage`      | Where generated `.tex`/`.pdf` are written  |
 | `APP_AUTH_TOKEN`  | —                | Optional token enabling single-user auth   |
