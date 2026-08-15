@@ -59,6 +59,9 @@ export function emptyProject(): ResumeProject {
   return {
     name: "",
     description: "",
+    techStack: "",
+    startDate: "",
+    endDate: "",
     url: "",
     highlights: [],
   };

@@ -133,8 +133,12 @@ export const SAMPLE_MASTER_RESUME: MasterResumeData = {
     {
       name: "OpenSchedule",
       description: "An open-source scheduling library for React.",
+      techStack: "React, TypeScript",
+      startDate: "2021",
+      endDate: "Present",
       url: "github.com/alexrivera/openschedule",
       highlights: ["1.2k GitHub stars", "Used in production by several startups"],
     },
   ],
+  leadership: [],
 };
