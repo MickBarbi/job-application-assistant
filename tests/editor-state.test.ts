@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   appendItem,
   emptyExperience,
+  emptyProject,
   listToMultiline,
   multilineToList,
   removeAt,
@@ -33,6 +34,18 @@ describe("resume editor state helpers", () => {
       location: "",
       startDate: "",
       endDate: "",
+      highlights: [],
+    });
+  });
+
+  it("creates empty project objects with tech stack and date fields", () => {
+    expect(emptyProject()).toEqual({
+      name: "",
+      description: "",
+      techStack: "",
+      startDate: "",
+      endDate: "",
+      url: "",
       highlights: [],
     });
   });

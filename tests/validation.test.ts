@@ -13,7 +13,21 @@ describe("masterResumeDataSchema", () => {
     });
     expect(parsed.skills).toEqual([]);
     expect(parsed.experience).toEqual([]);
+    expect(parsed.leadership).toEqual([]);
     expect(parsed.contact.phone).toBe("");
+  });
+
+  it("defaults new project fields (tech stack, dates)", () => {
+    const parsed = masterResumeDataSchema.parse({
+      contact: { name: "A", email: "" },
+      projects: [{ name: "Proj" }],
+    });
+    expect(parsed.projects[0]).toMatchObject({
+      name: "Proj",
+      techStack: "",
+      startDate: "",
+      endDate: "",
+    });
   });
 
   it("rejects a missing name", () => {

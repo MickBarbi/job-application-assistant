@@ -44,6 +44,10 @@ export const educationSchema = z.object({
 export const projectSchema = z.object({
   name: z.string().min(1),
   description: z.string().default(""),
+  /** Comma-separated tech stack shown alongside the project name. */
+  techStack: z.string().default(""),
+  startDate: z.string().default(""),
+  endDate: z.string().default(""),
   url: z.string().default(""),
   highlights: z.array(z.string()).default([]),
 });
@@ -59,6 +63,8 @@ export const masterResumeDataSchema = z.object({
   experience: z.array(experienceSchema).default([]),
   education: z.array(educationSchema).default([]),
   projects: z.array(projectSchema).default([]),
+  /** Leadership / activities — same shape as experience, rendered separately. */
+  leadership: z.array(experienceSchema).default([]),
 });
 
 export type MasterResumeData = z.infer<typeof masterResumeDataSchema>;

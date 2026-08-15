@@ -123,6 +123,17 @@ export function MasterResumeEditor({
     });
   }
 
+  function updateLeadership(index: number, patch: Partial<ResumeExperience>) {
+    setData((current) => {
+      const existing = current.leadership[index];
+      if (!existing) return current;
+      return {
+        ...current,
+        leadership: replaceAt(current.leadership, index, { ...existing, ...patch }),
+      };
+    });
+  }
+
   return (
     <section className="card p-5">
       <div>
@@ -227,6 +238,9 @@ export function MasterResumeEditor({
                 <EntryHeader title={project.name || `Project ${index + 1}`} onRemove={() => setData((current) => ({ ...current, projects: removeAt(current.projects, index) }))} />
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
                   <TextField label="Name" value={project.name} onChange={(value) => updateProject(index, { name: value })} required />
+                  <TextField label="Tech stack" value={project.techStack} onChange={(value) => updateProject(index, { techStack: value })} />
+                  <TextField label="Start date" value={project.startDate} onChange={(value) => updateProject(index, { startDate: value })} />
+                  <TextField label="End date" value={project.endDate} onChange={(value) => updateProject(index, { endDate: value })} />
                   <TextField label="URL" value={project.url} onChange={(value) => updateProject(index, { url: value })} />
                 </div>
                 <TextArea label="Description" value={project.description} rows={3} onChange={(value) => updateProject(index, { description: value })} />
@@ -235,6 +249,33 @@ export function MasterResumeEditor({
                   value={listToMultiline(project.highlights)}
                   rows={4}
                   onChange={(value) => updateProject(index, { highlights: multilineToList(value) })}
+                />
+              </div>
+            ))}
+          </div>
+        </Section>
+
+        <Section
+          title="Leadership"
+          action={<AddButton label="Add leadership" onClick={() => setData((current) => ({ ...current, leadership: appendItem(current.leadership, emptyExperience()) }))} />}
+        >
+          <div className="space-y-4">
+            {data.leadership.length === 0 ? <Empty message="No leadership entries yet." /> : null}
+            {data.leadership.map((entry, index) => (
+              <div key={index} className="rounded-lg border border-slate-200 p-4">
+                <EntryHeader title={entry.company || `Leadership ${index + 1}`} onRemove={() => setData((current) => ({ ...current, leadership: removeAt(current.leadership, index) }))} />
+                <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                  <TextField label="Organization" value={entry.company} onChange={(value) => updateLeadership(index, { company: value })} required />
+                  <TextField label="Role" value={entry.title} onChange={(value) => updateLeadership(index, { title: value })} required />
+                  <TextField label="Location" value={entry.location} onChange={(value) => updateLeadership(index, { location: value })} />
+                  <TextField label="Start date" value={entry.startDate} onChange={(value) => updateLeadership(index, { startDate: value })} />
+                  <TextField label="End date" value={entry.endDate} onChange={(value) => updateLeadership(index, { endDate: value })} />
+                </div>
+                <TextArea
+                  label="Highlights — one per line"
+                  value={listToMultiline(entry.highlights)}
+                  rows={4}
+                  onChange={(value) => updateLeadership(index, { highlights: multilineToList(value) })}
                 />
               </div>
             ))}

@@ -158,6 +158,8 @@ export function buildResumeContext(data: TailoredResumeData): Ctx {
     hasEducation: data.education.length > 0,
     projects: data.projects,
     hasProjects: data.projects.length > 0,
+    leadership: data.leadership,
+    hasLeadership: data.leadership.length > 0,
   };
 }
 

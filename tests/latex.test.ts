@@ -107,6 +107,7 @@ describe("renderResumeLatex", () => {
     ],
     education: [],
     projects: [],
+    leadership: [],
     rationale: "test",
   };
 
@@ -128,5 +129,40 @@ describe("renderResumeLatex", () => {
     );
     expect(tex).not.toContain("PROJECTS");
     expect(tex).toContain("SKILLS");
+  });
+
+  it("renders project tech stack and dates plus a leadership section", () => {
+    const rich: TailoredResumeData = {
+      ...data,
+      projects: [
+        {
+          name: "Stevens Stats",
+          description: "Stats platform",
+          techStack: "Next.js, Prisma",
+          startDate: "Feb 2024",
+          endDate: "May 2025",
+          url: "",
+          highlights: ["Built it"],
+        },
+      ],
+      leadership: [
+        {
+          company: "Track Team",
+          title: "Captain",
+          location: "Hoboken, NJ",
+          startDate: "2025",
+          endDate: "2026",
+          highlights: ["Led the team"],
+        },
+      ],
+    };
+
+    const tex = renderResumeLatex(
+      "{{#projects}}{{name}}|{{techStack}}|{{startDate}}-{{endDate}}{{/projects}}" +
+        "{{#hasLeadership}}[L]{{/hasLeadership}}{{#leadership}}{{title}}@{{company}}{{/leadership}}",
+      rich
+    );
+    expect(tex).toContain("Stevens Stats|Next.js, Prisma|Feb 2024-May 2025");
+    expect(tex).toContain("[L]Captain@Track Team");
   });
 });

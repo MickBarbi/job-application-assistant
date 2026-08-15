@@ -6,6 +6,20 @@ incrementally milestone by milestone.
 
 ## [Unreleased]
 
+### Richer résumé schema (project dates/tech-stack, leadership)
+
+Added:
+
+- Extended the master-résumé schema so projects carry a `techStack`, `startDate`,
+  and `endDate`, and added a top-level `leadership` array (same shape as
+  experience) rendered as its own section. This lets LaTeX templates reproduce
+  common résumé layouts (tech-stack + date on each project, a separate
+  Leadership section) exactly.
+- Exposed `leadership`/`hasLeadership` to the LaTeX renderer, added editor fields
+  for the new project fields and a Leadership section in Settings, and reminded
+  the generator to preserve project tech-stacks/dates and leadership entries.
+- Extended validation, LaTeX, and editor-state tests for the new fields.
+
 ### Provider-neutral / local-model generation
 
 Added:
