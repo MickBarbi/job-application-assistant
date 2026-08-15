@@ -151,6 +151,10 @@ export function buildResumeContext(data: TailoredResumeData): Ctx {
     hasSummary: isTruthy(data.summary),
     skills: data.skills,
     skillsCsv: data.skills.join(", "),
+    // A single pre-rendered block for "Category: items" skill lines: the
+    // category is bolded and lines are joined with LaTeX breaks, matching a
+    // single-\item Technical Skills section. Interpolate raw ({{{skillsLatex}}}).
+    skillsLatex: buildSkillsLatex(data.skills),
     hasSkills: data.skills.length > 0,
     experience: data.experience,
     hasExperience: data.experience.length > 0,
@@ -161,6 +165,24 @@ export function buildResumeContext(data: TailoredResumeData): Ctx {
     leadership: data.leadership,
     hasLeadership: data.leadership.length > 0,
   };
+}
+
+/**
+ * Renders skill lines into a single LaTeX block. A line of the form
+ * "Category: a, b, c" becomes "\textbf{Category:} a, b, c"; lines are joined
+ * with "\\" (no trailing break). All user text is escaped; the added \textbf
+ * and separators are literal LaTeX, so the result must be interpolated raw.
+ */
+export function buildSkillsLatex(skills: string[]): string {
+  return skills
+    .map((line) => {
+      const idx = line.indexOf(":");
+      if (idx === -1) return escapeLatex(line);
+      const category = line.slice(0, idx).trim();
+      const rest = line.slice(idx + 1).trim();
+      return `\\textbf{${escapeLatex(category)}:} ${escapeLatex(rest)}`;
+    })
+    .join(" \\\\ ");
 }
 
 /** Convenience: render a full resume from tailored data + a template body. */

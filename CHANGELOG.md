@@ -6,6 +6,20 @@ incrementally milestone by milestone.
 
 ## [Unreleased]
 
+### Résumé rendering + generation faithfulness
+
+Added / Changed:
+
+- Added `buildSkillsLatex`, exposing a `skillsLatex` render field that turns
+  "Category: items" skill lines into a single bolded-category LaTeX block
+  (joined with `\\`, no trailing break) so templates can match a single-`\item`
+  Technical Skills layout.
+- Hardened the resume generator's system prompt against common local-model
+  tailoring errors: copy numbers/GPAs/metrics verbatim, don't add skills absent
+  from the master, don't claim unattributed ownership, keep concrete bullets
+  (no vaguer/merged), keep verb tense accurate, and select/order by relevance.
+- Added tests for `buildSkillsLatex`.
+
 ### Richer résumé schema (project dates/tech-stack, leadership)
 
 Added:

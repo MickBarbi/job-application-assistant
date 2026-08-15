@@ -3,6 +3,7 @@ import {
   escapeLatex,
   renderTemplate,
   renderResumeLatex,
+  buildSkillsLatex,
 } from "@/lib/resume/latex";
 import type { TailoredResumeData } from "@/lib/validation";
 
@@ -79,6 +80,23 @@ describe("renderTemplate", () => {
       { groups: [{ name: "g1", tags: ["a", "b"] }] }
     );
     expect(out).toBe("g1:a,b, ");
+  });
+});
+
+describe("buildSkillsLatex", () => {
+  it("bolds the category and joins lines with LaTeX breaks (no trailing break)", () => {
+    const out = buildSkillsLatex([
+      "Languages: JavaScript, Python",
+      "Databases: PostgreSQL, MongoDB",
+    ]);
+    expect(out).toBe(
+      "\\textbf{Languages:} JavaScript, Python \\\\ \\textbf{Databases:} PostgreSQL, MongoDB"
+    );
+    expect(out.endsWith("\\\\")).toBe(false);
+  });
+
+  it("escapes user text but keeps a line without a colon intact", () => {
+    expect(buildSkillsLatex(["C# & SQL"])).toBe("C\\# \\& SQL");
   });
 });
 
