@@ -17,9 +17,11 @@ An AI-powered system for managing a job search end to end:
 Built with **Next.js (App Router) + TypeScript**, **Prisma + SQLite**, **Zod**,
 and **Vitest**.
 
-> **Status:** built incrementally. The core browser UI is complete, Milestone 4
-> hardening is in place with route integration tests, optional single-user auth,
-> jobs filtering/pagination, and shared toast feedback. See
+> **Status:** Actively built in small, tested increments. Working today: the full
+> job/application tracker with a status timeline, AI resume *and* cover-letter
+> tailoring from a single master resume, LaTeX → PDF export, a structured
+> master-resume editor, optional single-user auth, and a Dockerized deployment
+> path — backed by **86 passing** unit and route-integration tests. See
 > [`CHANGELOG.md`](./CHANGELOG.md) for what exists today and
 > [`docs/roadmap.md`](./docs/roadmap.md) for what's planned.
 

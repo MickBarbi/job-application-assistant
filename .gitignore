@@ -44,3 +44,9 @@ yarn-error.log*
 
 # TS build info
 *.tsbuildinfo
+
+# local one-off data loaders / scratch scripts (may contain personal data —
+# keep these out of version control)
+/_load-*.ts
+/scratch*
+
