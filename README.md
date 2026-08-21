@@ -27,6 +27,18 @@ and **Vitest**.
 
 ---
 
+## Screenshots
+
+| Dashboard | Job detail — application kit |
+| :---: | :---: |
+| [![Dashboard](docs/screenshots/dashboard.png)](docs/screenshots/dashboard.png) | [![Job detail](docs/screenshots/job-detail.png)](docs/screenshots/job-detail.png) |
+| **Jobs list** | **Settings — master résumé & templates** |
+| [![Jobs list](docs/screenshots/jobs.png)](docs/screenshots/jobs.png) | [![Settings](docs/screenshots/settings.png)](docs/screenshots/settings.png) |
+
+<sub>Screenshots use the built-in sample data (the fictional "Alex Rivera"), not real applicant information.</sub>
+
+---
+
 ## Quick start
 
 ```bash
