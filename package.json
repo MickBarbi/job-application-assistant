@@ -2,6 +2,7 @@
   "name": "job-application-assistant",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "description": "AI-powered job application management system: store postings, generate tailored resumes from a master resume + LaTeX template via the OpenAI API, track application status, and export PDFs.",
   "scripts": {
     "dev": "next dev",

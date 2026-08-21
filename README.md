@@ -159,3 +159,7 @@ generation, resume PDF/`.tex` downloads, cover-letter generation with tone
 selection and `.txt` download, Settings for editing the active master resume
 plus managing LaTeX templates, jobs search/filter/pagination, and optional
 single-user auth.
+
+## License
+
+Released under the [MIT License](./LICENSE) © 2026 James Barbi.
